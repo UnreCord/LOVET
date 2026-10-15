@@ -20,8 +20,8 @@ Luego abre la dirección que muestra la terminal. `LOVET.html` e `index.html` so
 - `styles.css`: colores y tipografía de la marca, diseño de cada sección.
 - `main.js`: navegación por secciones, vistazo dentro de la bolsa, arena interactiva con la pala,
   pasos del cambio de arena, mapa y formulario.
-- `assets/`: bolsa final de 10 kg, foto real de la arena (`arena-lovet.jpg`, se usa como textura en la bolsa,
-  en "Toca la arena" y en el arenero de "El cambio"), foto del arenero con arena común
+- `assets/`: bolsa final de 10 kg, texturas de la arena LOVET (`arena-lovet-bolsa.jpg` dentro de la bolsa;
+  `arena-lovet.jpg` en "Toca la arena" y en el arenero de "El cambio"), foto del arenero con arena común
   (`arenero.webp`, recortada con su sombra) y la máscara de su zona de arena (`arenero-arena.png`), fotos de las secciones, logos de LOVET y de los distribuidores de ejemplo.
 
 ## Pendiente antes de publicar

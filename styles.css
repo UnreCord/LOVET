@@ -192,7 +192,8 @@ html.pager .page.is-leaving::after { opacity: .55; }
   position: relative; z-index: 3;
   max-width: 640px;
 }
-.hero .display { color: var(--amarillo); }
+/* el titular de la portada respira mas que los demas: menos comprimido y con mas interlineado */
+.hero .display { color: var(--amarillo); font-variation-settings: "wdth" 92; letter-spacing: -0.012em; line-height: 1.02; }
 .hero__lead { margin-top: 28px; max-width: 34ch; font-weight: 700; font-size: 1.25rem; line-height: 1.35; color: var(--blanco); }
 .hero__text { margin-top: 10px; max-width: 40ch; color: rgba(255, 255, 255, .88); font-size: 1.125rem; }
 .hero__actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
@@ -251,12 +252,12 @@ html.pager .page.is-leaving::after { opacity: .55; }
 }
 .family__title {
   font-family: var(--serif); font-weight: 400;
-  font-size: clamp(3.4rem, 7vw, 7rem); line-height: .9;
-  letter-spacing: -0.01em;
+  font-size: clamp(3.4rem, 7vw, 7rem); line-height: 1.04;
+  letter-spacing: 0;
   color: var(--aloe);
 }
 .family__lead {
-  margin: 28px 0 16px;
+  margin: 32px 0 16px;
   font-size: clamp(1.35rem, 2vw, 1.75rem); line-height: 1.25; font-weight: 600;
   color: var(--aloe);
   max-width: 26ch;
@@ -503,7 +504,7 @@ html.pager .stores-wrap { overflow: hidden; }
   .steps__text { font-size: .84rem; }
   .contact__photo { height: 22svh; }
   .family__title { font-size: clamp(2.8rem, 5.5vw, 5.5rem); }
-  .family__lead { margin: 18px 0 12px; }
+  .family__lead { margin: 22px 0 12px; }
   .naming { margin-top: 24px; padding-top: 18px; }
 }
 

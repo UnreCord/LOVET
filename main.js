@@ -44,19 +44,25 @@ function offscreen(w, h, dpr) {
    La textura es la foto real de la arena: perlas claras y
    porosas con perlitas verdes. Asi se ve igual que el producto.
    ========================================================= */
-const SAND = new Image();
-SAND.src = 'assets/arena-lovet.jpg';
-const SAND_GRAIN_R = 24; // radio de una perla en la foto, en px de la foto
-const sandReady = () => SAND.complete && SAND.naturalWidth > 0;
+function texture(src, grainR) {
+  const img = new Image();
+  img.src = src;
+  img.grainR = grainR; // radio de una perla en la foto, en px de la foto
+  return img;
+}
+const SAND = texture('assets/arena-lovet.jpg', 6);          // "Toca la arena" y el arenero
+const SAND_BAG = texture('assets/arena-lovet-bolsa.jpg', 8); // dentro de la bolsa
+const loaded = img => img.complete && img.naturalWidth > 0;
+const sandReady = () => loaded(SAND) && loaded(SAND_BAG);
 
 // pinta la foto cubriendo el area, como object-fit: cover; devuelve la escala usada
-function drawSand(g, x, y, w, h, flip, zoom = 1) {
-  const s = Math.max(w / SAND.naturalWidth, h / SAND.naturalHeight) * zoom;
-  const dw = SAND.naturalWidth * s, dh = SAND.naturalHeight * s;
+function drawSand(g, x, y, w, h, flip, zoom = 1, img = SAND) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight) * zoom;
+  const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
   g.save();
   g.translate(x + w / 2, y + h / 2);
   if (flip) g.scale(-1, -1);
-  g.drawImage(SAND, -dw / 2, -dh / 2, dw, dh);
+  g.drawImage(img, -dw / 2, -dh / 2, dw, dh);
   g.restore();
   return s;
 }
@@ -150,7 +156,7 @@ function setupBag() {
   g.restore();
   g.save();
   g.clip(fill);
-  drawSand(g, 0, top * 0.8, B.w, B.h - top * 0.8, false);
+  drawSand(g, 0, top * 0.8, B.w, B.h - top * 0.8, false, 1.3, SAND_BAG);
   // adentro de la bolsa hay menos luz: la parte de arriba queda en sombra
   const depth = g.createLinearGradient(0, top * 0.8, 0, B.h);
   depth.addColorStop(0, 'rgba(10,22,18,0.55)');
@@ -264,7 +270,7 @@ function heroIntro() {
    ========================================================= */
 const fieldSection = $('#tocala');
 const fieldCanvas = $('#field');
-const FD = { g: null, w: 0, h: 0, r: 20, under: null, top: null, vignette: null, events: [], raf: 0, auto: 0, lastUser: -1e9 };
+const FD = { g: null, w: 0, h: 0, r: 6, u: 20, under: null, top: null, vignette: null, events: [], raf: 0, auto: 0, lastUser: -1e9 };
 const TAU = Math.PI * 2;
 const EVENT_MS = 4600;
 
@@ -278,7 +284,9 @@ function setupField() {
 
   let g;
   [FD.top, g] = offscreen(FD.w, FD.h, dpr);
-  FD.r = SAND_GRAIN_R * drawSand(g, 0, 0, FD.w, FD.h, false);
+  FD.r = SAND.grainR * drawSand(g, 0, 0, FD.w, FD.h, false);
+  // medida del grumo, independiente del tamaño de las perlas de la foto
+  FD.u = clamp(Math.min(FD.w, FD.h) / 37, 17, 26);
 
   // capa de abajo: otras perlas, en sombra, que se ven en el hueco cuando sale el grumo
   [FD.under, g] = offscreen(FD.w, FD.h, dpr);
@@ -312,7 +320,7 @@ function blobOf(e, scale) {
 function spawnClump(x, y, byUser) {
   const now = performance.now();
   if (FD.events.length >= 3) return false;
-  const R = FD.r * (3.8 + Math.random() * 0.6);
+  const R = FD.u * (3.8 + Math.random() * 0.6);
   for (const e of FD.events) {
     if (Math.hypot(e.x - x, e.y - y) < (e.R + R) * 2.2) return false;
   }
@@ -527,8 +535,8 @@ function drawGround(g, e, t) {
   g.clip(e.body);
   g.drawImage(FD.under, 0, 0, FD.w, FD.h);
   g.shadowColor = 'rgba(15,9,3,0.85)';
-  g.shadowBlur = FD.r * 0.9;
-  g.lineWidth = FD.r * 0.5;
+  g.shadowBlur = FD.u * 0.9;
+  g.lineWidth = FD.u * 0.5;
   g.strokeStyle = 'rgba(15,9,3,0.6)';
   g.stroke(e.body);
   g.restore();
@@ -669,7 +677,7 @@ function setupMixBox() {
   MX.fw = FW;
   MX.fh = FH;
   [MX.lovet, g] = offscreen(FW, FH, dpr);
-  const grainR = SAND_GRAIN_R * drawSand(g, 0, 0, FW, FH, false, 1.15);
+  const grainR = SAND.grainR * drawSand(g, 0, 0, FW, FH, false, 1.15);
   [MX.flat, MX.fg] = offscreen(FW, FH, dpr);
 
   // LOVET entra en puñados: manchas de perlas que crecen y se juntan
@@ -681,7 +689,8 @@ function setupMixBox() {
       const cx = (i + 0.5 + (rnd() - 0.5) * 0.35) * cell;
       const cy = (j + 0.5 + (rnd() - 0.5) * 0.35) * (FH / rows);
       // contorno relativo al centro, para poder escalar la mancha al crecer
-      MX.patches.push({ x: cx, y: cy, pts: clusterPoints(0, 0, cell * 0.95, grainR, rnd), rank: rnd(), delay: rnd() * 0.5 });
+      // borde irregular de puñado: bultos mas grandes que una perla sola
+      MX.patches.push({ x: cx, y: cy, pts: clusterPoints(0, 0, cell * 0.95, grainR * 3, rnd), rank: rnd(), delay: rnd() * 0.5 });
     }
   }
   drawMix(performance.now());
@@ -1449,7 +1458,7 @@ window.addEventListener('load', () => {
   chooseMode();
   setupAll();
 });
-[SAND, TRAY, TRAY_SAND].forEach(img => img.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); }));
+[SAND, SAND_BAG, TRAY, TRAY_SAND].forEach(img => img.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); }));
 
 let resizeTimer;
 window.addEventListener('resize', () => {

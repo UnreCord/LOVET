@@ -27,9 +27,8 @@
 
   <nav class="rail" aria-label="Secciones de la página">
     <a href="#inicio"><span>Inicio</span></a>
-    <a href="#familia"><span>La familia</span></a>
+    <a href="#familia"><span>Por qué LOVET</span></a>
     <a href="#tocala"><span>Pruébala</span></a>
-    <a href="#bolsas"><span>Presentaciones</span></a>
     <a href="#cambio"><span>El cambio</span></a>
     <a href="#donde"><span>Dónde comprar</span></a>
     <a href="#contacto"><span>Contacto</span></a>
@@ -42,33 +41,34 @@
     <section class="page" id="inicio" data-tone="dark" aria-labelledby="t-inicio">
       <div class="page__inner hero">
         <div class="hero__copy">
-          <h1 class="display" id="t-inicio">Que tu casa huela a casa.</h1>
-          <p class="hero__text">Arena perlada aglomerante con aroma a aloe vera. Encierra el olor en un grumo firme, casi no levanta polvo y sale entera con la pala.</p>
+          <h1 class="display" id="t-inicio" lang="en">If you LOVET, they LOVET</h1>
+          <p class="hero__lead">Arena perlada super premium con aroma a aloe vera.</p>
+          <p class="hero__text">Libre de polvo, control de malos olores y aglomeración firme.</p>
           <div class="hero__actions">
-            <a class="btn btn--yellow" href="#bolsas">Elige tu tamaño</a>
-            <a class="btn btn--line" href="#donde">Dónde comprar</a>
+            <a class="btn btn--yellow" href="#donde">Dónde comprar</a>
+            <a class="btn btn--line" href="#contacto">Escríbenos</a>
           </div>
           <button class="peek-btn" id="bag-toggle" type="button" aria-pressed="false" aria-controls="bag">Mirar dentro de la bolsa</button>
         </div>
 
         <figure class="bag" id="bag">
           <canvas class="bag__inside" id="bag-pearls" aria-hidden="true"></canvas>
-          <img class="bag__skin" id="bag-img" src="assets/bolsa-10kg.png" width="599" height="906"
+          <img class="bag__skin" id="bag-img" src="assets/bolsa-10kg.png" width="467" height="683"
                alt="Bolsa de 10 kg de LOVET Premium Clumping Cat Litter">
         </figure>
       </div>
     </section>
 
-    <!-- 2. LA FAMILIA ELEGIDA -->
+    <!-- 2. POR QUE LOVET -->
     <section class="page" id="familia" data-tone="light" aria-labelledby="t-familia">
       <div class="page__inner family">
         <div class="family__photo">
-          <img src="https://images.unsplash.com/photo-1695740666652-9369b8c3da28?w=1400&q=80&auto=format&fit=crop"
-               alt="Gato atigrado descansando con los ojos cerrados sobre una manta gris" width="1400" height="1750">
+          <img src="assets/familia.jpg"
+               alt="Una persona vierte arena LOVET de la bolsa de 5 kg en la caja mientras un gato naranja la mira" width="972" height="1215">
         </div>
         <div class="family__text">
-          <h2 class="family__title" id="t-familia">La familia elegida</h2>
-          <p class="family__lead">Cuando eliges a tu gato como familia, no lo haces a medias.</p>
+          <h2 class="family__title" id="t-familia">¿Por qué LOVET?</h2>
+          <p class="family__lead">“Amor que se nota. Cuidado que se siente.”</p>
           <p>LOVET junta dos palabras: el amor con el que lo cuidas y el respaldo veterinario que merece. Una arena pensada como la piensa un veterinario y elegida como la elige alguien que quiere.</p>
           <dl class="naming">
             <div>
@@ -90,151 +90,80 @@
       <div class="page__inner field-ui">
         <div class="field-ui__copy">
           <h2 class="display" id="t-tocala">Toca la arena.</h2>
-          <p>Cada toque es un uso de la caja. Mira cómo las perlas encierran el líquido en un grumo firme y cómo la pala lo saca entero, sin dejar restos.</p>
+          <p>Sus perlas absorben el líquido y aglomeran firmemente para que puedas retirarla fácilmente con la pala.</p>
           <button class="btn btn--line" id="field-btn" type="button">Formar un grumo</button>
         </div>
-        <ul class="facts">
+        <!-- los mismos beneficios que lleva la bolsa -->
+        <ul class="perks">
           <li>
-            <h3>Grumo firme</h3>
-            <p>No se desmorona al sacarlo con la pala.</p>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 1.5a10.5 10.5 0 1 1 0 21 10.5 10.5 0 0 1 0-21zM10.8 5.5h2.4v6.3h-2.4zM13.2 11.8h4v2.4h-6.4v-2.4z"/></svg>
+            Mayor duración
           </li>
           <li>
-            <h3>Olor encerrado</h3>
-            <p>Queda dentro del grumo, no en el aire de tu casa.</p>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="1.5" width="9.2" height="8" rx="1.6"/><rect x="12.8" y="1.5" width="9.2" height="8" rx="1.6"/><path d="M2 11.2h20v.6a10 10 0 0 1-20 0z"/></svg>
+            100% natural
           </li>
           <li>
-            <h3>Casi sin polvo</h3>
-            <p>Las perlas no se deshacen al verterlas.</p>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="8.6" cy="8.4" r="6.6"/><circle cx="16.6" cy="10.6" r="5.6"/><circle cx="10.6" cy="17.4" r="5.4"/></svg>
+            Aglomeración firme
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="16.6" rx="6.2" ry="5.2"/><ellipse cx="4.2" cy="10.2" rx="2.4" ry="3"/><ellipse cx="8.8" cy="5.6" rx="2.5" ry="3.2"/><ellipse cx="15.2" cy="5.6" rx="2.5" ry="3.2"/><ellipse cx="19.8" cy="10.2" rx="2.4" ry="3"/></svg>
+            99% libre de polvo
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 2c-2.4 3.3 2.4 6.7 0 10s2.4 6.7 0 10M12 2c-2.4 3.3 2.4 6.7 0 10s2.4 6.7 0 10M19 2c-2.4 3.3 2.4 6.7 0 10s2.4 6.7 0 10"/></svg>
+            Control de olores
+          </li>
+          <li>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><mask id="perk-x"><rect width="24" height="24" fill="#fff"/><path d="M7.2 7.2l9.6 9.6M16.8 7.2l-9.6 9.6" stroke="#000" stroke-width="2.2" stroke-linecap="round"/></mask><path mask="url(#perk-x)" d="M7 1.5c1.9 0 3.5 1 5 2.6 1.5-1.6 3.1-2.6 5-2.6a5.5 5.5 0 0 1 5.5 5.5c0 1.9-1 3.5-2.6 5 1.6 1.5 2.6 3.1 2.6 5a5.5 5.5 0 0 1-5.5 5.5c-1.9 0-3.5-1-5-2.6-1.5 1.6-3.1 2.6-5 2.6A5.5 5.5 0 0 1 1.5 17c0-1.9 1-3.5 2.6-5C2.5 10.5 1.5 8.9 1.5 7A5.5 5.5 0 0 1 7 1.5z"/></svg>
+            Absorción rápida
           </li>
         </ul>
       </div>
     </section>
 
-    <!-- 4. PRESENTACIONES + CUANTO DURA -->
-    <section class="page" id="bolsas" data-tone="light" aria-labelledby="t-bolsas">
-      <div class="page__inner sizes">
-        <div class="sizes__head">
-          <h2 class="display" id="t-bolsas">Elige tu bolsa.</h2>
-          <p class="sizes__intro">LOVET Super Premium: arena perlada aglomerante con aroma a aloe vera, en tres tamaños.</p>
-        </div>
-
-        <div class="home-calc" role="group" aria-labelledby="home-calc-title">
-          <p class="home-calc__title" id="home-calc-title">Cuéntanos de tu casa</p>
-          <div class="stepper">
-            <span class="stepper__label" id="l-cats">Gatos</span>
-            <div class="stepper__ctrl">
-              <button type="button" data-step="cats" data-delta="-1" aria-label="Un gato menos">−</button>
-              <output id="cats" aria-labelledby="l-cats">1</output>
-              <button type="button" data-step="cats" data-delta="1" aria-label="Un gato más">+</button>
-            </div>
-          </div>
-          <div class="stepper">
-            <span class="stepper__label" id="l-boxes">Cajas de arena</span>
-            <div class="stepper__ctrl">
-              <button type="button" data-step="boxes" data-delta="-1" aria-label="Una caja menos">−</button>
-              <output id="boxes" aria-labelledby="l-boxes">1</output>
-              <button type="button" data-step="boxes" data-delta="1" aria-label="Una caja más">+</button>
-            </div>
-          </div>
-          <p class="home-calc__tip" id="calc-tip"></p>
-        </div>
-
-        <div class="sizes__display">
-          <ul class="shelf" role="radiogroup" aria-label="Tamaño de bolsa">
-            <li class="size" role="presentation" style="--s: .794">
-              <button class="size__pick" type="button" role="radio" aria-checked="false" aria-describedby="size-5">
-                <img src="assets/bolsa-5kg.png" alt="Bolsa LOVET de 5 kg" width="599" height="906">
-              </button>
-              <div class="size__info" id="size-5">
-                <p class="size__badge">Ideal para tu casa</p>
-                <h3>5 kg</h3>
-                <p class="size__last">Dura <strong></strong></p>
-                <p class="size__desc">Para probarla o para casas con un solo gato.</p>
-                <p class="size__ean">Código de barras 7750549350007</p>
-              </div>
-            </li>
-            <li class="size" role="presentation" style="--s: 1">
-              <button class="size__pick" type="button" role="radio" aria-checked="false" aria-describedby="size-10">
-                <img src="assets/bolsa-10kg.png" alt="Bolsa LOVET de 10 kg" width="599" height="906">
-              </button>
-              <div class="size__info" id="size-10">
-                <p class="size__badge">Ideal para tu casa</p>
-                <h3>10 kg</h3>
-                <p class="size__last">Dura <strong></strong></p>
-                <p class="size__desc">Casi un mes de arena para un gato y su caja.</p>
-                <p class="size__ean">Código de barras 7750549350014</p>
-              </div>
-            </li>
-            <li class="size" role="presentation" style="--s: 1.26">
-              <button class="size__pick" type="button" role="radio" aria-checked="false" aria-describedby="size-20">
-                <img src="assets/bolsa-20kg.png" alt="Bolsa LOVET de 20 kg" width="599" height="906">
-              </button>
-              <div class="size__info" id="size-20">
-                <p class="size__badge">Ideal para tu casa</p>
-                <h3>20 kg</h3>
-                <p class="size__last">Dura <strong></strong></p>
-                <p class="size__desc">Para varios gatos o para comprar con menos frecuencia.</p>
-                <p class="size__ean">Código de barras 7750549350021</p>
-              </div>
-            </li>
-          </ul>
-          <p class="sizes__fine">Bolsas a escala entre sí. La duración es una estimación: 6&nbsp;kg por caja en cada cambio completo (cada 4 semanas) y unos 170&nbsp;g de grumos al día por gato.</p>
-        </div>
-
-        <div class="pick">
-          <p class="pick__name">Tu elección: <strong id="pick-name">bolsa de 10 kg</strong></p>
-          <p class="pick__last" id="pick-last"></p>
-          <div class="pick__actions">
-            <a class="btn btn--yellow" id="wa-order" href="https://wa.me/51900000000" target="_blank" rel="noopener">Pedir por WhatsApp</a>
-            <a class="btn btn--line" href="#donde">Ver dónde comprar</a>
-          </div>
-          <p class="sr-only" id="calc-summary" aria-live="polite"></p>
-        </div>
-      </div>
-    </section>
-
-    <!-- 5. EL CAMBIO -->
+    <!-- 4. EL CAMBIO -->
     <section class="page" id="cambio" data-tone="dark" aria-labelledby="t-cambio">
       <div class="page__inner switch">
         <div class="switch__text">
-          <h2 class="display" id="t-cambio">Cámbiate sin que tu gato lo note.</h2>
-          <p class="switch__intro">Los gatos son de costumbres. Mezcla LOVET con su arena de siempre y sube la proporción en una semana.</p>
+          <h2 class="display" id="t-cambio">Una nueva arena, paso a paso.</h2>
+          <p class="switch__intro">Dale tiempo a tu gato para descubrir LOVET. Mezcla un poco de nuestra arena con la que usa habitualmente y aumenta la cantidad progresivamente, según cómo se adapte.</p>
 
-          <div class="days" role="tablist" aria-label="Días del cambio">
-            <button type="button" role="tab" id="day-0" aria-controls="mix-panel" aria-selected="true">Días 1 y 2</button>
-            <button type="button" role="tab" id="day-1" aria-controls="mix-panel" aria-selected="false" tabindex="-1">Días 3 y 4</button>
-            <button type="button" role="tab" id="day-2" aria-controls="mix-panel" aria-selected="false" tabindex="-1">Días 5 y 6</button>
-            <button type="button" role="tab" id="day-3" aria-controls="mix-panel" aria-selected="false" tabindex="-1">Día 7</button>
+          <div class="steps" role="tablist" aria-label="Pasos del cambio">
+            <button type="button" role="tab" id="step-0" aria-controls="mix-panel" aria-selected="true">
+              <span class="steps__n">1</span>
+              <span class="steps__title">Empieza poco a poco</span>
+              <span class="steps__text">Añade una pequeña cantidad de LOVET a su arena habitual.</span>
+            </button>
+            <button type="button" role="tab" id="step-1" aria-controls="mix-panel" aria-selected="false" tabindex="-1">
+              <span class="steps__n">2</span>
+              <span class="steps__title">Aumenta la mezcla</span>
+              <span class="steps__text">Incorpora más LOVET gradualmente si tu gato la acepta.</span>
+            </button>
+            <button type="button" role="tab" id="step-2" aria-controls="mix-panel" aria-selected="false" tabindex="-1">
+              <span class="steps__n">3</span>
+              <span class="steps__title">Observa su adaptación</span>
+              <span class="steps__text">Continúa hasta usar solo LOVET, sin apresurar el proceso.</span>
+            </button>
           </div>
-
-          <div class="mix-panel" id="mix-panel" role="tabpanel" aria-labelledby="day-0">
-            <div class="cups" aria-hidden="true"></div>
-            <p class="mix-panel__rule" id="mix-rule" aria-live="polite">Una parte de LOVET por tres de su arena actual.</p>
-            <div class="ratio" aria-hidden="true">
-              <span class="ratio__lovet" id="ratio-lovet">25% LOVET</span>
-              <span class="ratio__old" id="ratio-old">75% su arena</span>
-            </div>
-          </div>
-          <p class="switch__after">Desde el día 8, retira los grumos cada día, completa el nivel y cambia toda la arena cada 3 o 4 semanas.</p>
+          <p class="switch__after">Tu michi tiene su propio ritmo.</p>
         </div>
 
-        <figure class="switch__box">
-          <canvas id="mix-box" role="img" aria-label="Caja de arena con la mezcla de los días 1 y 2: una parte de LOVET por tres de su arena actual."></canvas>
-          <figcaption class="legend">
-            <span class="legend__item"><i class="legend__pearl"></i>Perlas LOVET: redondas y claras</span>
-            <span class="legend__item"><i class="legend__old"></i>Su arena actual</span>
-          </figcaption>
+        <figure class="switch__box" id="mix-panel" role="tabpanel" aria-labelledby="step-0">
+          <canvas id="mix-box" role="img" aria-label="Caja de arena con un poco de LOVET mezclado con su arena habitual."></canvas>
+          <figcaption class="switch__note">*Imagen referencial</figcaption>
         </figure>
       </div>
     </section>
 
-    <!-- 6. DONDE COMPRAR: MAPA -->
+    <!-- 5. DONDE COMPRAR: MAPA -->
     <section class="page" id="donde" data-tone="light" aria-labelledby="t-donde">
       <div class="map" id="map" role="region" aria-label="Mapa de puntos de venta de LOVET en Lima"></div>
       <div class="page__inner stores-wrap">
         <aside class="stores">
           <div class="stores__head">
-            <h2 id="t-donde">Encuéntrala cerca de ti.</h2>
+            <h2 id="t-donde">Encuéntranos en</h2>
             <span class="stores__demo">Datos de ejemplo</span>
           </div>
           <div class="stores__search">
@@ -244,32 +173,35 @@
           </div>
           <p class="stores__count" id="store-count" aria-live="polite"></p>
           <div class="stores__list" id="store-list"></div>
-          <p class="stores__foot">¿No la ves en tu zona? <a href="https://wa.me/51900000000?text=Hola%20LOVET%2C%20%C2%BFd%C3%B3nde%20puedo%20comprar%20la%20arena%20cerca%20de%20mi%20casa%3F" target="_blank" rel="noopener">Escríbenos por WhatsApp</a>.</p>
         </aside>
       </div>
     </section>
 
-    <!-- 7. CONTACTO -->
+    <!-- 6. CONTACTO -->
     <section class="page" id="contacto" data-tone="dark" aria-labelledby="t-contacto">
       <div class="page__inner contact">
         <div class="contact__intro">
           <h2 class="display" id="t-contacto">Hablemos.</h2>
-          <p>Si eres petlover, tienes una veterinaria, un pet shop o una tienda online y te interesa LOVET, escríbenos. También atendemos pedidos por WhatsApp.</p>
-          <a class="btn btn--yellow" href="https://wa.me/51900000000?text=Hola%20LOVET" target="_blank" rel="noopener">Escribir por WhatsApp</a>
-          <img class="contact__photo" src="https://images.unsplash.com/photo-1615111784767-4d7c527f32a1?w=1100&q=80&auto=format&fit=crop"
-               alt="Gato blanco y negro mirando hacia arriba sobre un fondo amarillo" width="1100" height="1375" loading="lazy">
+          <p>Si tienes una veterinaria, un pet shop o una tienda online y te interesa LOVET, escríbenos. También atendemos pedidos por correo.</p>
+          <div class="contact__mail">
+            <a class="btn btn--yellow" href="mailto:marketingpets@solvet.com.pe?subject=Hola%20LOVET">Escribir por correo</a>
+            <a class="contact__address" href="mailto:marketingpets@solvet.com.pe">marketingpets@solvet.com.pe</a>
+          </div>
+          <div class="contact__photo">
+            <img src="assets/contacto-gato.jpg" alt="Gato de pelo largo blanco y beige mirando hacia arriba sobre un fondo amarillo" width="391" height="615" loading="lazy">
+          </div>
         </div>
 
         <div class="contact__box">
           <form class="contact-form" id="contact-form" novalidate>
             <div class="field">
-              <label for="c-name">Nombres</label>
-              <input id="c-name" name="nombres" autocomplete="given-name" required aria-describedby="c-name-err">
+              <label for="c-name">Nombre completo</label>
+              <input id="c-name" name="nombre" autocomplete="name" required aria-describedby="c-name-err">
               <p class="field__error" id="c-name-err"></p>
             </div>
             <div class="field">
-              <label for="c-last">Apellidos</label>
-              <input id="c-last" name="apellidos" autocomplete="family-name">
+              <label for="c-biz">Nombre comercial</label>
+              <input id="c-biz" name="nombre_comercial" autocomplete="organization">
             </div>
             <div class="field">
               <label for="c-mail">Correo</label>
@@ -277,18 +209,25 @@
               <p class="field__error" id="c-mail-err"></p>
             </div>
             <div class="field">
-              <label for="c-phone">Teléfono o WhatsApp</label>
-              <input id="c-phone" name="telefono" type="tel" autocomplete="tel" placeholder="987 654 321" aria-describedby="c-phone-err">
+              <label for="c-phone">Número</label>
+              <input id="c-phone" name="numero" type="tel" autocomplete="tel" placeholder="987 654 321" aria-describedby="c-phone-err">
               <p class="field__error" id="c-phone-err"></p>
+            </div>
+            <div class="field">
+              <label for="c-place">Distrito / Provincia</label>
+              <input id="c-place" name="distrito_provincia" autocomplete="address-level2">
+            </div>
+            <div class="field">
+              <label for="c-ruc">RUC</label>
+              <input id="c-ruc" name="ruc" inputmode="numeric" maxlength="11" placeholder="20123456789" aria-describedby="c-ruc-err">
+              <p class="field__error" id="c-ruc-err"></p>
             </div>
             <div class="field field--wide">
               <label for="c-who">¿Quién nos escribe?</label>
               <select id="c-who" name="perfil">
-                <option>Tengo una mascota</option>
                 <option>Tengo una veterinaria</option>
                 <option>Tengo un pet shop</option>
                 <option>Tengo una tienda online</option>
-                <option>Quiero ser distribuidor</option>
                 <option>Otro</option>
               </select>
             </div>
@@ -297,16 +236,12 @@
               <textarea id="c-msg" name="mensaje" rows="3" required aria-describedby="c-msg-err"></textarea>
               <p class="field__error" id="c-msg-err"></p>
             </div>
-            <label class="check field--wide">
-              <input type="checkbox" id="c-news" name="novedades">
-              <span>Quiero recibir consejos de cuidado y novedades de LOVET. Un correo al mes.</span>
-            </label>
             <div class="contact-form__foot field--wide">
               <button class="btn btn--aloe" type="submit">Enviar mensaje</button>
             </div>
           </form>
           <div class="contact-done" id="contact-done" hidden tabindex="-1">
-            <h3>Mensaje enviado.</h3>
+            <h3>Tu mensaje está listo.</h3>
             <p id="contact-done-text"></p>
             <button class="btn btn--outline" id="contact-again" type="button">Enviar otro mensaje</button>
           </div>

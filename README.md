@@ -16,16 +16,16 @@ Luego abre la dirección que muestra la terminal. `LOVET.html` e `index.html` so
 
 ## Archivos
 
-- `index.html` / `LOVET.html`: estructura de las 7 secciones.
+- `index.html` / `LOVET.html`: estructura de las 6 secciones.
 - `styles.css`: colores y tipografía de la marca, diseño de cada sección.
 - `main.js`: navegación por secciones, vistazo dentro de la bolsa, arena interactiva con la pala,
-  calculadora de presentaciones, caja de "Cámbiate", mapa y formulario.
-- `assets/`: bolsas de 5, 10 y 20 kg, logos de LOVET y logos de los distribuidores de ejemplo.
+  pasos del cambio de arena, mapa y formulario.
+- `assets/`: bolsa final de 10 kg, foto real de la arena (`arena-lovet.jpg`, se usa como textura en la bolsa,
+  en "Toca la arena" y en la caja de "El cambio"), fotos de las secciones, logos de LOVET y de los distribuidores de ejemplo.
 
 ## Pendiente antes de publicar
 
 - Reemplazar las tiendas del mapa (son datos de ejemplo) por los distribuidores reales, en `STORES` dentro de `main.js`.
-- Cambiar el número de WhatsApp de relleno `51900000000` (en `main.js` e `index.html`).
-- Conectar el formulario de contacto a un servicio de envío (Formspree, backend propio, CRM).
-- Validar con datos reales los supuestos de la calculadora (`FILL_KG`, `CHANGE_DAYS`, `CAT_KG_DAY` en `main.js`).
-- Reemplazar las fotos de Unsplash y las bolsas de 5 y 20 kg (editadas a partir de la de 10 kg) por fotos propias.
+- El formulario de contacto no tiene servidor: al enviarlo abre el correo del visitante con el mensaje
+  listo para marketingpets@solvet.com.pe. Si se quiere envío directo, conectarlo a un servicio (Formspree, CRM...).
+- Si hay archivos de la bolsa en mayor resolución que el PDF de presentaciones, reemplazar `assets/bolsa-10kg.png`.

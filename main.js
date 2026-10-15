@@ -619,8 +619,8 @@ function fieldLeave() {
 }
 
 /* =========================================================
-   4. EL CAMBIO: un arenero donde LOVET se va sumando a su
-   arena de siempre en tres pasos
+   4. EL CAMBIO: un arenero real donde LOVET se va sumando a
+   su arena de siempre en tres pasos
    ========================================================= */
 const MIX_STEPS = [
   // cada puñado cubre unas tres celdas: con 7% y 22% se ve un poco y casi la mitad
@@ -631,57 +631,43 @@ const MIX_STEPS = [
 const STEP_MS = 4200;
 const mixCanvas = $('#mix-box');
 const stepTabs = $$('.steps [role="tab"]');
-const MX = { g: null, w: 0, h: 0, box: null, flat: null, fg: null, common: null, lovet: null, patches: [], share: 0.07, from: 0.07, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
+const MX = { g: null, w: 0, h: 0, rect: null, flat: null, fg: null, lovet: null, layer: null, lg: null, mask: null, patches: [], share: 0.07, from: 0.07, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
 
-// arena comun: foto real de una arena gris con puntitos de color, en mosaico sin costuras
-const COMMON = new Image();
-COMMON.src = 'assets/arena-comun.jpg';
-const commonReady = () => COMMON.complete && COMMON.naturalWidth > 0;
-
-/* arenero visto en tres cuartos: el borde de arriba, la pared de
-   adelante y, adentro, la arena en perspectiva */
-function boxGeometry(w, h) {
-  const cx = w / 2;
-  const rim = { y0: h * 0.06, y1: h * 0.72, b: w * 0.39, f: w * 0.478 };    // borde exterior: atras y adelante
-  const t = w * 0.03;                                                        // grosor del borde
-  const open = { y0: rim.y0 + t * 0.55, y1: rim.y1 - t * 0.85, b: rim.b - t * 0.85, f: rim.f - t };
-  const sand = { y0: open.y0 + h * 0.06, y1: open.y1 - h * 0.004, b: open.b - w * 0.018, f: open.f - w * 0.004 };
-  const base = { y: h * 0.9, f: w * 0.45 };                                  // la pared de adelante se angosta hacia el piso
-  return { cx, rim, t, open, sand, base };
-}
-
-// trapecio con esquinas redondeadas
-function trapezoid(cx, q, r) {
-  const p = new Path2D();
-  const pts = [[cx - q.b, q.y0], [cx + q.b, q.y0], [cx + q.f, q.y1], [cx - q.f, q.y1]];
-  p.moveTo((pts[0][0] + pts[1][0]) / 2, q.y0);
-  for (let i = 1; i <= 4; i++) p.arcTo(pts[i % 4][0], pts[i % 4][1], pts[(i + 1) % 4][0], pts[(i + 1) % 4][1], r);
-  p.closePath();
-  return p;
-}
+// arenero real (foto recortada, con su sombra) con arena comun gris de puntitos,
+// y la mascara de la zona de arena donde se va sumando LOVET
+const TRAY = new Image();
+TRAY.src = 'assets/arenero.webp';
+const TRAY_SAND = new Image();
+TRAY_SAND.src = 'assets/arenero-arena.png';
+const trayReady = () => [TRAY, TRAY_SAND].every(img => img.complete && img.naturalWidth > 0);
+// superficie de la arena en la foto, en fracciones del ancho y alto:
+// y del borde de atras y de adelante, y x de sus extremos izquierdo y derecho.
+// Un poco mas grande que la arena real: la mascara recorta el borde exacto
+const TRAY_SURFACE = { y0: 0.18, b0: 0.17, b1: 0.785, y1: 0.61, f0: 0.07, f1: 0.86 };
 
 function setupMixBox() {
   MX.w = mixCanvas.clientWidth;
   MX.h = mixCanvas.clientHeight;
-  if (!MX.w || !MX.h || !sandReady() || !commonReady()) return;
+  if (!MX.w || !MX.h || !sandReady() || !trayReady()) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 2);
   MX.g = sizeCanvas(mixCanvas, MX.w, MX.h, 2);
-  MX.box = boxGeometry(MX.w, MX.h);
+  // la foto entra completa en el lienzo (como object-fit: contain)
+  const s = Math.min(MX.w / TRAY.naturalWidth, MX.h / TRAY.naturalHeight);
+  const dw = TRAY.naturalWidth * s, dh = TRAY.naturalHeight * s;
+  MX.rect = { x: (MX.w - dw) / 2, y: (MX.h - dh) / 2, w: dw, h: dh };
 
-  // la arena se arma vista desde arriba en un lienzo plano y luego se proyecta
-  const FW = Math.round(MX.box.sand.f * 2), FH = Math.round((MX.box.sand.y1 - MX.box.sand.y0) * 1.3);
+  let g;
+  [MX.mask, g] = offscreen(MX.w, MX.h, dpr);
+  g.drawImage(TRAY_SAND, MX.rect.x, MX.rect.y, dw, dh);
+  [MX.layer, MX.lg] = offscreen(MX.w, MX.h, dpr);
+
+  // LOVET se arma visto desde arriba en un lienzo plano y luego se proyecta sobre la arena
+  const S = TRAY_SURFACE;
+  const FW = Math.round((S.f1 - S.f0) * dw), FH = Math.round((S.y1 - S.y0) * dh * 1.3);
   MX.fw = FW;
   MX.fh = FH;
-  let g;
-  [MX.common, g] = offscreen(FW, FH, dpr);
-  const cs = FW / 560; // granos de la arena comun algo mas finos que las perlas LOVET
-  g.save();
-  g.scale(cs, cs);
-  g.fillStyle = g.createPattern(COMMON, 'repeat');
-  g.fillRect(0, 0, FW / cs, FH / cs);
-  g.restore();
   [MX.lovet, g] = offscreen(FW, FH, dpr);
-  const grainR = SAND_GRAIN_R * drawSand(g, 0, 0, FW, FH, false, 1.35);
+  const grainR = SAND_GRAIN_R * drawSand(g, 0, 0, FW, FH, false, 1.15);
   [MX.flat, MX.fg] = offscreen(FW, FH, dpr);
 
   // LOVET entra en puñados: manchas de perlas que crecen y se juntan
@@ -699,11 +685,10 @@ function setupMixBox() {
   drawMix(performance.now());
 }
 
-// mezcla vista desde arriba: arena comun y manchas de LOVET encima
+// manchas de LOVET vistas desde arriba, sobre fondo transparente; devuelve si hay alguna
 function drawFlat(now) {
   const g = MX.fg, { fw, fh } = MX;
-  g.globalAlpha = 1;
-  g.drawImage(MX.common, 0, 0, fw, fh);
+  g.clearRect(0, 0, fw, fh);
   const k = MX.t0 < 0 ? 1 : clamp01((now - MX.t0) / 1300);
   const lovet = new Path2D();
   let any = false;
@@ -718,9 +703,10 @@ function drawFlat(now) {
     any = true;
     lovet.addPath(smoothPath(p.pts.map(([x, y]) => [p.x + x * sc, p.y + y * sc])));
   }
-  if (!any) return;
+  if (!any) return false;
+  // sombra suave de cada puñado sobre la arena comun
   g.save();
-  g.shadowColor = 'rgba(30,26,22,0.55)';
+  g.shadowColor = 'rgba(20,18,16,0.55)';
   g.shadowBlur = fw * 0.012;
   g.shadowOffsetY = fw * 0.004;
   g.fillStyle = '#b7aea4';
@@ -730,112 +716,42 @@ function drawFlat(now) {
   g.clip(lovet);
   g.drawImage(MX.lovet, 0, 0, fw, fh);
   g.restore();
+  return true;
 }
 
 function drawMix(now) {
   const g = MX.g;
   if (!g) return;
-  const { w, h, box } = MX;
-  const { cx, rim, open, sand, base } = box;
+  const { w, h, rect } = MX;
   g.clearRect(0, 0, w, h);
+  g.drawImage(TRAY, rect.x, rect.y, rect.w, rect.h);
+  if (!drawFlat(now)) return;
 
-  // sombra del arenero en el piso
-  // (solo se ve la sombra difusa: la elipse queda fuera del lienzo)
-  g.save();
-  g.shadowColor = 'rgba(0,14,12,0.6)';
-  g.shadowBlur = 28;
-  g.shadowOffsetY = 10000;
-  g.beginPath();
-  g.ellipse(cx, base.y + h * 0.015 - 10000, base.f * 1.04, h * 0.05, 0, 0, TAU);
-  g.fill();
-  g.restore();
-
-  // pared de adelante, por fuera
-  const front = new Path2D();
-  const r = w * 0.03;
-  front.moveTo(cx - rim.f, rim.y1 - r);
-  front.lineTo(cx + rim.f, rim.y1 - r);
-  front.lineTo(cx + base.f, base.y - r);
-  front.quadraticCurveTo(cx + base.f, base.y, cx + base.f - r * 1.5, base.y);
-  front.lineTo(cx - base.f + r * 1.5, base.y);
-  front.quadraticCurveTo(cx - base.f, base.y, cx - base.f, base.y - r);
-  front.closePath();
-  const wall = g.createLinearGradient(0, rim.y1, 0, base.y);
-  wall.addColorStop(0, '#b9bdbb');
-  wall.addColorStop(1, '#868b89');
-  g.fillStyle = wall;
-  g.fill(front);
-  const side = g.createLinearGradient(cx - rim.f, 0, cx + rim.f, 0);
-  side.addColorStop(0, 'rgba(0,0,0,0.22)');
-  side.addColorStop(0.18, 'rgba(0,0,0,0)');
-  side.addColorStop(0.82, 'rgba(0,0,0,0)');
-  side.addColorStop(1, 'rgba(0,0,0,0.25)');
-  g.fillStyle = side;
-  g.fill(front);
-
-  // borde de arriba
-  const top = trapezoid(cx, rim, w * 0.045);
-  const rimFill = g.createLinearGradient(0, rim.y0, 0, rim.y1);
-  rimFill.addColorStop(0, '#c9cdcb');
-  rimFill.addColorStop(1, '#e3e6e4');
-  g.fillStyle = rimFill;
-  g.fill(top);
-  g.lineWidth = 1.5;
-  g.strokeStyle = 'rgba(255,255,255,0.7)';
-  g.stroke(top);
-
-  // adentro: paredes interiores en sombra
-  const inner = trapezoid(cx, open, w * 0.03);
-  g.save();
-  g.clip(inner);
-  const innerWall = g.createLinearGradient(0, open.y0, 0, sand.y0 + h * 0.04);
-  innerWall.addColorStop(0, '#9fa4a2');
-  innerWall.addColorStop(1, '#6f7472');
-  g.fillStyle = innerWall;
-  g.fillRect(0, 0, w, h);
-
-  // la arena en perspectiva: se dibuja por franjas, mas angostas al fondo
-  drawFlat(now);
-  const sandPath = trapezoid(cx, sand, w * 0.02);
-  g.save();
-  g.clip(sandPath);
-  const strips = Math.ceil(sand.y1 - sand.y0);
+  // proyeccion por franjas: cada franja del lienzo plano ocupa el ancho de la arena a esa profundidad
+  const S = TRAY_SURFACE, lg = MX.lg;
+  const y0 = rect.y + S.y0 * rect.h, y1 = rect.y + S.y1 * rect.h;
+  const strips = Math.ceil(y1 - y0);
+  lg.globalCompositeOperation = 'source-over';
+  lg.clearRect(0, 0, w, h);
   for (let i = 0; i < strips; i++) {
-    const v = i / strips, half = sand.b + (sand.f - sand.b) * v;
-    g.drawImage(MX.flat, 0, v * MX.flat.height, MX.flat.width, MX.flat.height / strips,
-      cx - half, sand.y0 + i, half * 2, 1.6);
+    const v = i / strips;
+    const left = rect.x + (S.b0 + (S.f0 - S.b0) * v) * rect.w;
+    const right = rect.x + (S.b1 + (S.f1 - S.b1) * v) * rect.w;
+    lg.drawImage(MX.flat, 0, v * MX.flat.height, MX.flat.width, MX.flat.height / strips, left, y0 + i, right - left, 1.6);
   }
-  // luz: el fondo y los costados quedan bajo la sombra de las paredes
-  const depth = g.createLinearGradient(0, sand.y0, 0, sand.y1);
-  depth.addColorStop(0, 'rgba(20,18,16,0.5)');
-  depth.addColorStop(0.22, 'rgba(20,18,16,0.12)');
-  depth.addColorStop(1, 'rgba(255,255,255,0.04)');
-  g.fillStyle = depth;
-  g.fillRect(0, 0, w, h);
-  const sides = g.createLinearGradient(cx - sand.f, 0, cx + sand.f, 0);
-  sides.addColorStop(0, 'rgba(20,18,16,0.3)');
-  sides.addColorStop(0.1, 'rgba(20,18,16,0)');
-  sides.addColorStop(0.9, 'rgba(20,18,16,0)');
-  sides.addColorStop(1, 'rgba(20,18,16,0.3)');
-  g.fillStyle = sides;
-  g.fillRect(0, 0, w, h);
-  g.restore();
-  // sombra que el borde de adelante deja sobre la arena
-  g.lineWidth = w * 0.012;
-  g.strokeStyle = 'rgba(20,18,16,0.25)';
-  g.stroke(inner);
-  g.restore();
-
-  // canto del borde, con brillo
-  g.lineWidth = 1.2;
-  g.strokeStyle = 'rgba(70,75,73,0.6)';
-  g.stroke(inner);
-  g.beginPath();
-  g.moveTo(cx - rim.f + w * 0.03, rim.y1);
-  g.lineTo(cx + rim.f - w * 0.03, rim.y1);
-  g.lineWidth = 2;
-  g.strokeStyle = 'rgba(255,255,255,0.75)';
-  g.stroke();
+  // misma luz que la foto: el fondo de la arena queda bajo la sombra de la pared
+  lg.globalCompositeOperation = 'source-atop';
+  const depth = lg.createLinearGradient(0, y0, 0, y1);
+  depth.addColorStop(0, 'rgba(25,22,20,0.4)');
+  depth.addColorStop(0.3, 'rgba(25,22,20,0.08)');
+  depth.addColorStop(1, 'rgba(25,22,20,0)');
+  lg.fillStyle = depth;
+  lg.fillRect(0, 0, w, h);
+  // solo dentro de la arena del arenero
+  lg.globalCompositeOperation = 'destination-in';
+  lg.drawImage(MX.mask, 0, 0, w, h);
+  lg.globalCompositeOperation = 'source-over';
+  g.drawImage(MX.layer, 0, 0, w, h);
 }
 
 function mixTick(now) {
@@ -1531,7 +1447,7 @@ window.addEventListener('load', () => {
   chooseMode();
   setupAll();
 });
-[SAND, COMMON].forEach(img => img.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); }));
+[SAND, TRAY, TRAY_SAND].forEach(img => img.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); }));
 
 let resizeTimer;
 window.addEventListener('resize', () => {

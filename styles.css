@@ -333,7 +333,7 @@ html.pager .field-ui { overflow: hidden; }
 @keyframes stepTimer { to { transform: scaleX(1); } }
 .switch__after { margin-top: 22px; font-weight: 700; font-size: 1.15rem; color: var(--blanco); }
 
-.switch__box #mix-box { display: block; width: 100%; aspect-ratio: 16 / 11; }
+.switch__box #mix-box { display: block; width: 100%; aspect-ratio: 1105 / 635; }
 .switch__note { margin-top: 10px; font-size: .82rem; font-style: italic; color: rgba(255, 255, 255, .7); }
 
 /* ---------- 5. donde comprar ---------- */
@@ -571,7 +571,6 @@ html.pager .stores-wrap { overflow: hidden; }
   .steps__title { font-size: .86rem; line-height: 1.25; }
   .steps__text { display: none; }
   .switch__after { margin-top: 14px; font-size: 1rem; }
-  .switch__box #mix-box { aspect-ratio: 16 / 9; }
   .switch__note { margin-top: 6px; }
 
   .map { height: 42svh; }
@@ -600,7 +599,6 @@ html.pager .stores-wrap { overflow: hidden; }
   .bag { height: 34svh; }
   .hero__lead, .hero__text { font-size: .92rem; }
   .switch__intro { display: none; }
-  .switch__box #mix-box { aspect-ratio: 2 / 1; }
 }
 
 @media (prefers-reduced-motion: reduce) {

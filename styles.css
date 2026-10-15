@@ -445,18 +445,14 @@ html.pager .stores-wrap { overflow: hidden; }
 .contact__mail { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 20px; }
 .contact__address { font-weight: 600; color: var(--blanco); text-underline-offset: 4px; text-decoration-color: rgba(237, 222, 0, .6); }
 .contact__address:hover { color: var(--amarillo); }
-/* la foto es vertical: el fondo amarillo continua hacia la izquierda */
+/* la foto es horizontal: el marco toma su proporcion segun el alto disponible,
+   asi los tres gatos se ven enteros */
 .contact__photo {
-  display: flex; justify-content: flex-end;
-  width: 100%; max-width: 560px; height: clamp(170px, 30svh, 330px); margin-top: 28px;
+  height: clamp(170px, 30svh, 330px); max-width: 100%; aspect-ratio: 1264 / 848; margin-top: 28px;
   border-radius: 22px; overflow: hidden;
-  background: linear-gradient(180deg, #fed670, #fed25a 55%, #fdcf55);
+  background: #f1c24e;
 }
-.contact__photo img {
-  height: 100%; width: auto; max-width: none;
-  -webkit-mask-image: linear-gradient(90deg, transparent, #000 18%);
-  mask-image: linear-gradient(90deg, transparent, #000 18%);
-}
+.contact__photo img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 60%; }
 .contact__intro .display { color: var(--amarillo); font-size: clamp(3rem, 6.5vw, 6.5rem); }
 .contact__intro p { margin: 24px 0 28px; max-width: 40ch; color: rgba(255, 255, 255, .88); font-size: 1.1rem; }
 .contact__box {
@@ -543,7 +539,7 @@ html.pager .stores-wrap { overflow: hidden; }
   .stores__list { margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter) 8px; }
 
   .contact { grid-template-columns: 1fr; align-content: start; }
-  .contact__photo { height: 200px; }
+  .contact__photo { height: 240px; }
   .contact__box { margin-top: 24px; }
 }
 
@@ -599,7 +595,7 @@ html.pager .stores-wrap { overflow: hidden; }
   .contact__box { padding: 20px 18px; }
   .contact__intro .display { font-size: 3rem; }
   .contact__intro p { margin: 14px 0 18px; font-size: 1rem; }
-  .contact__photo { height: 150px; margin-top: 18px; }
+  .contact__photo { width: 100%; height: auto; margin-top: 18px; }
   .footer { gap: 12px 16px; }
 }
 

@@ -2,6 +2,8 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// misma condicion que en styles.css: celulares y tablets en vertical usan una sola columna
+const stacked = matchMedia('(max-width: 1023px) and (orientation: portrait), (max-width: 639px)');
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const clamp01 = v => clamp(v, 0, 1);
@@ -588,7 +590,7 @@ function fieldTick(now) {
 }
 
 function randomClump(byUser) {
-  const wide = FD.w >= 1024;
+  const wide = !stacked.matches;
   for (let i = 0; i < 6; i++) {
     const x = FD.w * (wide ? 0.55 + Math.random() * 0.25 : 0.25 + Math.random() * 0.5);
     const y = FD.h * (wide ? 0.25 + Math.random() * 0.4 : 0.48 + Math.random() * 0.12);
@@ -959,7 +961,7 @@ function selectStore(id, fly) {
   map.setLayoutProperty('store-points', 'icon-image', ['case', ['==', ['get', 'id'], id], 'lovet-pin-on', 'lovet-pin']);
   map.setLayoutProperty('store-points', 'symbol-sort-key', ['case', ['==', ['get', 'id'], id], 1, 0]);
   if (fly) {
-    const wide = window.innerWidth >= 1024;
+    const wide = !stacked.matches;
     map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 14.2), offset: wide ? [200, 0] : [0, 0], duration: reduceMotion ? 0 : 900 });
   }
   if (popup) popup.remove();
@@ -1081,7 +1083,7 @@ function fitStores(list, animate) {
   if (!list.length) return;
   const bounds = new maplibregl.LngLatBounds();
   list.forEach(s => bounds.extend([s.lng, s.lat]));
-  const wide = window.innerWidth >= 1024;
+  const wide = !stacked.matches;
   const padding = wide
     ? { top: 110, bottom: 50, left: Math.min(520, window.innerWidth * 0.4), right: 190 }
     : { top: 70, bottom: 50, left: 30, right: 30 };

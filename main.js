@@ -2,7 +2,6 @@
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-const WA_NUMBER = '51900000000';
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const clamp01 = v => clamp(v, 0, 1);
@@ -39,11 +38,26 @@ function offscreen(w, h, dpr) {
 }
 
 /* =========================================================
-   GRANULOS DE ARENA
-   Perlas mate e irregulares, con textura calcarea, como la
-   arena real que se ve en la foto de la bolsa.
+   ARENA LOVET
+   La textura es la foto real de la arena: perlas claras y
+   porosas con perlitas verdes. Asi se ve igual que el producto.
    ========================================================= */
-const SPR = 96, SPR_R = 30;
+const SAND = new Image();
+SAND.src = 'assets/arena-lovet.jpg';
+const SAND_GRAIN_R = 24; // radio de una perla en la foto, en px de la foto
+const sandReady = () => SAND.complete && SAND.naturalWidth > 0;
+
+// pinta la foto cubriendo el area, como object-fit: cover; devuelve la escala usada
+function drawSand(g, x, y, w, h, flip) {
+  const s = Math.max(w / SAND.naturalWidth, h / SAND.naturalHeight);
+  const dw = SAND.naturalWidth * s, dh = SAND.naturalHeight * s;
+  g.save();
+  g.translate(x + w / 2, y + h / 2);
+  if (flip) g.scale(-1, -1);
+  g.drawImage(SAND, -dw / 2, -dh / 2, dw, dh);
+  g.restore();
+  return s;
+}
 
 function smoothPath(pts) {
   const p = new Path2D(), n = pts.length;
@@ -58,21 +72,9 @@ function smoothPath(pts) {
   return p;
 }
 
-// forma redondeada pero imperfecta (perla de arcilla)
-function blobPath(R, rnd, wobble) {
-  const waves = [];
-  for (let k = 2; k <= 7; k++) waves.push({ k, a: (wobble * (0.4 + rnd() * 0.6)) / (k - 1), p: rnd() * Math.PI * 2 });
-  const pts = [];
-  for (let i = 0; i < 32; i++) {
-    const t = (i / 32) * Math.PI * 2;
-    let r = 1 + (rnd() - 0.5) * wobble * 0.5;
-    waves.forEach(w => { r += w.a * Math.sin(w.k * t + w.p); });
-    pts.push([Math.cos(t) * R * r, Math.sin(t) * R * r]);
-  }
-  return smoothPath(pts);
-}
+/* piedritas grises y angulosas: la arena comun que se reemplaza */
+const SPR = 96, SPR_R = 30;
 
-// forma angulosa (arena comun de piedritas)
 function rockPath(R, rnd) {
   const n = 6 + Math.floor(rnd() * 3), p = new Path2D();
   for (let i = 0; i < n; i++) {
@@ -84,14 +86,14 @@ function rockPath(R, rnd) {
   return p;
 }
 
-function granuleSprite(rnd, tone, kind, shade) {
+function rockSprite(rnd, tone) {
   const c = document.createElement('canvas');
   c.width = c.height = SPR;
   const g = c.getContext('2d');
   g.translate(SPR / 2, SPR / 2);
-  const path = kind === 'grain' ? rockPath(SPR_R, rnd) : blobPath(SPR_R, rnd, kind === 'wet' ? 0.2 : 0.17);
+  const path = rockPath(SPR_R, rnd);
 
-  // sombra de contacto con las perlas de alrededor
+  // sombra de contacto con los granos de alrededor
   g.save();
   g.shadowColor = 'rgba(28,18,8,0.55)';
   g.shadowBlur = 9;
@@ -103,7 +105,6 @@ function granuleSprite(rnd, tone, kind, shade) {
 
   g.save();
   g.clip(path);
-  // luz suave desde arriba a la izquierda, sin brillo de perla de mar
   const light = g.createLinearGradient(-SPR_R, -SPR_R, SPR_R, SPR_R);
   light.addColorStop(0, 'rgba(255,252,244,0.24)');
   light.addColorStop(0.45, 'rgba(255,252,244,0)');
@@ -113,39 +114,20 @@ function granuleSprite(rnd, tone, kind, shade) {
   g.lineWidth = SPR_R * 0.22;
   g.strokeStyle = 'rgba(55,40,24,0.22)';
   g.stroke(path);
-  // textura calcarea: grumitos claros y oscuros muy finos
   for (let i = 0; i < 320; i++) {
     const x = (rnd() - 0.5) * SPR_R * 2.2, y = (rnd() - 0.5) * SPR_R * 2.2, s = 0.7 + rnd() * 1.5;
     g.fillStyle = rnd() < 0.5 ? `rgba(255,255,248,${0.06 + rnd() * 0.12})` : `rgba(75,56,36,${0.05 + rnd() * 0.1})`;
     g.fillRect(x, y, s, s);
-  }
-  if (kind === 'wet') { // la arcilla mojada brilla un poco
-    const sh = g.createRadialGradient(-SPR_R * 0.35, -SPR_R * 0.4, 0, -SPR_R * 0.35, -SPR_R * 0.4, SPR_R * 0.6);
-    sh.addColorStop(0, 'rgba(255,255,255,0.22)');
-    sh.addColorStop(1, 'rgba(255,255,255,0)');
-    g.fillStyle = sh;
-    g.fillRect(-SPR_R, -SPR_R, SPR_R * 2, SPR_R * 2);
-  }
-  if (shade) { // version oscura para las capas de abajo
-    g.globalCompositeOperation = 'source-atop';
-    g.fillStyle = `rgba(30,22,12,${shade})`;
-    g.fillRect(-SPR_R * 1.5, -SPR_R * 1.5, SPR_R * 3, SPR_R * 3);
   }
   g.restore();
   return c;
 }
 
 const rndSprites = seeded(7);
-const PEARL_TONES = ['#efe6d5', '#e8dcc8', '#e0d2bb', '#d7c8ae', '#ebe2d1', '#d0c0a4', '#e4d9c5', '#dacbb2'];
-const PEARLS = PEARL_TONES.flatMap(t => [granuleSprite(rndSprites, t, 'pearl'), granuleSprite(rndSprites, t, 'pearl')]);
-const PEARLS_DEEP = PEARL_TONES.map(t => granuleSprite(rndSprites, t, 'pearl', 0.42));
-const WET = ['#9b8873', '#8e7a63', '#a39079', '#857159'].map(t => granuleSprite(rndSprites, t, 'wet'));
-const GRAINS = ['#7d8186', '#6d7176', '#8b8f94', '#62666b', '#757a7f', '#868a8e'].flatMap(t => [granuleSprite(rndSprites, t, 'grain'), granuleSprite(rndSprites, t, 'grain')]);
+const ROCKS = ['#7d8186', '#6d7176', '#8b8f94', '#62666b', '#757a7f', '#868a8e'].flatMap(t => [rockSprite(rndSprites, t), rockSprite(rndSprites, t)]);
 
-// el sprite mide 96px y el granulo 30px de radio: 96/30 = 3.2
-function drawSprite(g, s, x, y, r, a) {
-  if (a <= 0) return;
-  g.globalAlpha = Math.min(a, 1);
+// el sprite mide 96px y el grano 30px de radio: 96/30 = 3.2
+function drawSprite(g, s, x, y, r) {
   g.drawImage(s, x - r * 1.6, y - r * 1.6, r * 3.2, r * 3.2);
 }
 
@@ -172,28 +154,18 @@ function grain(g, w, h, alpha) {
   g.restore();
 }
 
-// rellena un area con granulos, de abajo hacia arriba
-function packGranules(w, h, r, surface, rnd, layers) {
-  const list = [];
-  layers.forEach(({ scale, deep, shift }) => {
-    const rr = r * scale, stepX = rr * 1.7, stepY = rr * 1.45;
-    const sprites = deep ? PEARLS_DEEP : PEARLS;
-    let row = 0;
-    for (let y = h + rr; y > -rr; y -= stepY, row++) {
-      const off = (row % 2) * stepX / 2 + shift * stepX;
-      for (let x = off - rr; x < w + rr; x += stepX) {
-        const px = x + (rnd() - 0.5) * rr * 1.05;
-        const py = y + (rnd() - 0.5) * rr * 0.95;
-        if (py < surface(px)) continue;
-        list.push({
-          x: px, y: py, r: rr * (0.65 + rnd() * 0.6),
-          s: sprites[Math.floor(rnd() * sprites.length)],
-          front: !deep, ox: 0, oy: 0, vx: 0, vy: 0, k: rnd()
-        });
-      }
-    }
-  });
-  return list;
+// contorno de un grupo de perlas: redondeado, con un bulto por cada perla del borde
+function clusterPoints(cx, cy, R, grainR, rnd) {
+  const bumps = Math.max(6, Math.round((Math.PI * 2 * R) / (grainR * 2.1)));
+  const p1 = rnd() * 7, p2 = rnd() * 7, p3 = rnd() * 7;
+  const pts = [];
+  const n = bumps * 4;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2;
+    const r = R * (1 + 0.07 * Math.sin(3 * a + p1) + 0.05 * Math.sin(5 * a + p2)) + grainR * 0.32 * Math.sin(bumps * a + p3);
+    pts.push([cx + Math.cos(a) * r, cy + Math.sin(a) * r]);
+  }
+  return pts;
 }
 
 /* =========================================================
@@ -212,19 +184,39 @@ let bagHover = false, bagPinned = false, bagTouched = false, bagTouchTimer = 0;
 function setupBag() {
   B.w = bag.offsetWidth;
   B.h = bag.offsetHeight;
-  if (!B.w || !B.h) return;
+  if (!B.w || !B.h || !sandReady() || !bagImg.complete) return;
   B.R = Math.min(115, B.w * 0.29);
   const g = sizeCanvas(bagCanvas, B.w, B.h, 2);
   g.fillStyle = '#0f2a24';
   g.fillRect(0, 0, B.w, B.h);
+  // la arena llena la bolsa hasta poco debajo del sello, con la superficie irregular
+  const top = B.h * 0.24;
   const rnd = seeded(23);
-  const surface = x => B.h * 0.26 - Math.sin((x / B.w) * Math.PI) * B.h * 0.025;
-  packGranules(B.w, B.h, B.w / 46, surface, rnd, [
-    { scale: 0.85, deep: true, shift: 0.33 },
-    { scale: 1, deep: false, shift: 0 }
-  ]).forEach(p => drawSprite(g, p.s, p.x, p.y, p.r, 1));
-  g.globalAlpha = 1;
-  grain(g, B.w, B.h, 0.18);
+  const fill = new Path2D();
+  fill.moveTo(0, B.h);
+  for (let x = 0; x <= B.w; x += B.w / 40) {
+    fill.lineTo(x, top - Math.sin((x / B.w) * Math.PI) * B.h * 0.025 + (rnd() - 0.5) * B.w * 0.012);
+  }
+  fill.lineTo(B.w, B.h);
+  fill.closePath();
+  g.save();
+  g.shadowColor = 'rgba(0,0,0,0.6)';
+  g.shadowBlur = 18;
+  g.fillStyle = '#6b6258';
+  g.fill(fill);
+  g.restore();
+  g.save();
+  g.clip(fill);
+  drawSand(g, 0, top * 0.8, B.w, B.h - top * 0.8, false);
+  // adentro de la bolsa hay menos luz: la parte de arriba queda en sombra
+  const depth = g.createLinearGradient(0, top * 0.8, 0, B.h);
+  depth.addColorStop(0, 'rgba(10,22,18,0.55)');
+  depth.addColorStop(0.25, 'rgba(10,22,18,0.05)');
+  depth.addColorStop(1, 'rgba(10,22,18,0.2)');
+  g.fillStyle = depth;
+  g.fillRect(0, 0, B.w, B.h);
+  g.restore();
+  grain(g, B.w, B.h, 0.14);
   const side = g.createLinearGradient(0, 0, B.w, 0);
   side.addColorStop(0, 'rgba(4,30,25,0.6)');
   side.addColorStop(0.2, 'rgba(4,30,25,0)');
@@ -329,37 +321,27 @@ function heroIntro() {
    ========================================================= */
 const fieldSection = $('#tocala');
 const fieldCanvas = $('#field');
-const FD = { g: null, w: 0, h: 0, r: 9, front: [], under: null, top: null, vignette: null, events: [], raf: 0, auto: 0, lastUser: -1e9 };
+const FD = { g: null, w: 0, h: 0, r: 20, under: null, top: null, vignette: null, events: [], raf: 0, auto: 0, lastUser: -1e9 };
 const TAU = Math.PI * 2;
 const EVENT_MS = 4600;
 
 function setupField() {
   FD.w = fieldSection.clientWidth;
   FD.h = fieldSection.clientHeight;
-  if (!FD.w || !FD.h) return;
+  if (!FD.w || !FD.h || !sandReady()) return;
   const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
   FD.g = sizeCanvas(fieldCanvas, FD.w, FD.h, 1.5);
-  FD.r = clamp(FD.w / 150, 7, 10);
   FD.events = [];
-  const rnd = seeded(31);
-  const all = packGranules(FD.w, FD.h, FD.r, () => -1e4, rnd, [
-    { scale: 0.85, deep: true, shift: 0.33 },
-    { scale: 1, deep: false, shift: 0 }
-  ]);
-  FD.front = all.filter(p => p.front);
 
-  // capa de abajo: lo que se ve en el hueco cuando sacas el grumo
   let g;
-  [FD.under, g] = offscreen(FD.w, FD.h, dpr);
-  g.fillStyle = '#4a3c2c';
-  g.fillRect(0, 0, FD.w, FD.h);
-  all.filter(p => !p.front).forEach(p => drawSprite(g, p.s, p.x, p.y, p.r, 1));
-  g.globalAlpha = 1;
-
   [FD.top, g] = offscreen(FD.w, FD.h, dpr);
-  g.drawImage(FD.under, 0, 0, FD.w, FD.h);
-  FD.front.forEach(p => drawSprite(g, p.s, p.x, p.y, p.r, 1));
-  g.globalAlpha = 1;
+  FD.r = SAND_GRAIN_R * drawSand(g, 0, 0, FD.w, FD.h, false);
+
+  // capa de abajo: otras perlas, en sombra, que se ven en el hueco cuando sale el grumo
+  [FD.under, g] = offscreen(FD.w, FD.h, dpr);
+  drawSand(g, 0, 0, FD.w, FD.h, true);
+  g.fillStyle = 'rgba(30,20,10,0.5)';
+  g.fillRect(0, 0, FD.w, FD.h);
 
   [FD.vignette, g] = offscreen(FD.w, FD.h, dpr);
   const v = g.createRadialGradient(FD.w * 0.6, FD.h * 0.45, Math.min(FD.w, FD.h) * 0.25, FD.w * 0.6, FD.h * 0.45, Math.max(FD.w, FD.h) * 0.75);
@@ -377,8 +359,8 @@ function stainRadius(e, a) {
 }
 function blobOf(e, scale) {
   const pts = [];
-  for (let i = 0; i < 30; i++) {
-    const a = (i / 30) * TAU, r = stainRadius(e, a) * scale;
+  for (let i = 0; i < 36; i++) {
+    const a = (i / 36) * TAU, r = stainRadius(e, a) * scale;
     pts.push([e.x + Math.cos(a) * r, e.y + Math.sin(a) * r]);
   }
   return smoothPath(pts);
@@ -387,7 +369,7 @@ function blobOf(e, scale) {
 function spawnClump(x, y, byUser) {
   const now = performance.now();
   if (FD.events.length >= 3) return false;
-  const R = FD.r * (4.8 + Math.random() * 1.2);
+  const R = FD.r * (3.8 + Math.random() * 0.6);
   for (const e of FD.events) {
     if (Math.hypot(e.x - x, e.y - y) < (e.R + R) * 2.2) return false;
   }
@@ -396,165 +378,231 @@ function spawnClump(x, y, byUser) {
     w1: 0.06 + Math.random() * 0.05, w2: 0.03 + Math.random() * 0.04, w3: 0.04 + Math.random() * 0.05,
     p1: Math.random() * TAU, p2: Math.random() * TAU, p3: Math.random() * TAU
   };
-  e.clipR = R * 1.3 + FD.r * 1.8;
   // la pala entra desde abajo a la derecha, como la tomaria una mano diestra
   const ang = Math.atan2(FD.h * 1.15 - y, FD.w * 1.05 - x) + (Math.random() - 0.5) * 0.4;
   e.dir = [Math.cos(ang), Math.sin(ang)];
   e.rot = ang - Math.PI / 2;
   e.travel = Math.hypot(FD.w, FD.h) * 0.8;
-  e.members = [];
-  e.neighbors = [];
-  for (const p of FD.front) {
-    const dx = p.x - x, dy = p.y - y, d = Math.hypot(dx, dy), a = Math.atan2(dy, dx), edge = stainRadius(e, a);
-    if (d < edge) e.members.push({ p, d, a, edge, rd: Math.random() * 350, wet: WET[Math.floor(p.k * WET.length)] });
-    else if (d < e.clipR + FD.r * 1.6) e.neighbors.push(p);
-  }
-  e.body = blobOf(e, 0.92);
-  e.stain = blobOf(e, 1.14);
-  // granos secos que quedan sobre la pala y caen por las ranuras al levantarla
-  e.loose = Array.from({ length: 8 }, () => {
-    const a = Math.random() * TAU, rr = R * (0.98 + Math.random() * 0.18);
-    return { x: Math.cos(a) * rr, y: Math.sin(a) * rr * 0.92, r: FD.r * (0.7 + Math.random() * 0.4), s: PEARLS[Math.floor(Math.random() * PEARLS.length)] };
-  });
+  // el grumo: las perlas mojadas de la foto, con el borde de perlas sueltas
+  const rnd = seeded(1 + Math.floor(Math.random() * 1e6));
+  e.body = smoothPath(clusterPoints(x, y, R * 0.92, FD.r, rnd).map(([px, py]) => {
+    const a = Math.atan2(py - y, px - x), k = stainRadius(e, a) / R;
+    return [x + (px - x) * k, y + (py - y) * k];
+  }));
+  // la humedad se esparce en capas: borde suave, centro mas oscuro
+  e.wet = [1.2, 1.1, 1, 0.9, 0.78, 0.62].map(k => blobOf(e, k));
   FD.events.push(e);
   if (byUser) FD.lastUser = now;
   if (!FD.raf) FD.raf = requestAnimationFrame(fieldTick);
   return true;
 }
 
-// el grumo: perlas mojadas unidas por la arcilla en una sola pieza
-function drawClump(g, e, wetK, pull, lift) {
-  if (pull > 0) {
-    g.save();
-    g.globalAlpha = pull;
-    g.shadowColor = 'rgba(20,12,4,0.55)';
-    g.shadowBlur = 8 + lift * 22;
-    g.shadowOffsetX = 2 + lift * 10;
-    g.shadowOffsetY = 4 + lift * 18;
-    const body = g.createRadialGradient(e.x - e.R * 0.3, e.y - e.R * 0.35, e.R * 0.1, e.x, e.y, e.R * 1.1);
-    body.addColorStop(0, '#9a8670');
-    body.addColorStop(1, '#5e4d3b');
-    g.fillStyle = body;
-    g.fill(e.body);
-    g.restore();
-  }
-  const k = 0.14 * pull;
-  for (const m of e.members) {
-    const wet = clamp01((wetK * m.edge * 1.12 - m.d) / (FD.r * 1.2));
-    const x = m.p.x + (e.x - m.p.x) * k;
-    const y = m.p.y + (e.y - m.p.y) * k;
-    const r = m.p.r * (1 + 0.06 * pull); // las perlas se hinchan un poco al absorber
-    drawSprite(g, m.p.s, x, y, r, 1 - wet);
-    drawSprite(g, m.wet, x, y, r, wet);
-  }
-  if (pull > 0) { // borde oscuro que separa el grumo de la arena seca
-    g.globalAlpha = 0.5 * pull;
-    g.strokeStyle = 'rgba(40,26,12,0.6)';
-    g.lineWidth = FD.r * 0.5;
-    g.stroke(e.body);
-  }
-  g.globalAlpha = 1;
+// la arena mojada se oscurece sin perder la textura de las perlas
+function wetTint(g, e, k) {
+  if (k <= 0) return;
+  g.save();
+  g.globalCompositeOperation = 'multiply';
+  g.fillStyle = '#86715a';
+  g.globalAlpha = 0.3 * k;
+  g.translate(e.x, e.y);
+  g.scale(0.35 + 0.65 * k, 0.35 + 0.65 * k);
+  g.translate(-e.x, -e.y);
+  for (const p of e.wet) g.fill(p);
+  g.restore();
 }
 
-// pala de plastico vista desde arriba, con ranuras para cernir
-function drawScoop(g, e, x, y, s, lift, looseAlpha) {
-  const R = e.R, W = R * 2.7, L = R * 2.55;
-  const bladeTop = -L / 2, bladeEnd = L / 2;
+// el grumo: una sola pieza firme hecha de las mismas perlas
+function drawClump(g, e, pull, lift) {
+  if (pull <= 0) return;
+  const c = 1 - 0.05 * pull; // al aglomerarse las perlas se juntan un poco
+  g.save();
+  g.translate(e.x, e.y);
+  g.scale(c, c);
+  g.translate(-e.x, -e.y);
+
+  g.save();
+  g.globalAlpha = pull;
+  g.shadowColor = 'rgba(20,12,4,0.6)';
+  g.shadowBlur = 6 + lift * 22;
+  g.shadowOffsetX = 2 + lift * 10;
+  g.shadowOffsetY = 3 + lift * 18;
+  g.fillStyle = '#6b5c4a';
+  g.fill(e.body);
+  g.restore();
+
+  g.save();
+  g.clip(e.body);
+  g.drawImage(FD.top, 0, 0, FD.w, FD.h);
+  wetTint(g, e, 1);
+  // volumen: luz arriba a la izquierda y el borde que se curva hacia abajo
+  const vol = g.createRadialGradient(e.x - e.R * 0.3, e.y - e.R * 0.35, e.R * 0.1, e.x, e.y, e.R * 1.02);
+  vol.addColorStop(0, `rgba(255,246,230,${0.2 * pull})`);
+  vol.addColorStop(0.5, 'rgba(255,246,230,0)');
+  vol.addColorStop(0.8, `rgba(40,26,12,${0.18 * pull})`);
+  vol.addColorStop(1, `rgba(30,18,8,${0.6 * pull})`);
+  g.fillStyle = vol;
+  g.fillRect(e.x - e.R * 1.4, e.y - e.R * 1.4, e.R * 2.8, e.R * 2.8);
+  g.restore();
+  g.restore();
+}
+
+/* pala de plastico vista desde arriba, como una de verdad: paredes
+   laterales, rejilla de ranuras por donde cae la arena limpia y un
+   mango largo con agujero para colgarla */
+function scoopPaths(R) {
+  const W = R * 2.7, L = R * 2.5;
+  const fw = W / 2, bw = W * 0.43, y0 = -L / 2, y1 = L / 2, cr = W * 0.11;
+  const neck = R * 0.5, hw = R * 0.27, hl = R * 3.4;
+
+  const edge = (p, close) => {
+    p.moveTo(-fw, y0 + cr);
+    p.quadraticCurveTo(-fw, y0, -fw + cr, y0);
+    p.quadraticCurveTo(0, y0 - R * 0.14, fw - cr, y0); // borde de ataque, apenas curvo
+    p.quadraticCurveTo(fw, y0, fw, y0 + cr);
+    p.lineTo(bw, y1 - cr);
+    p.quadraticCurveTo(bw, y1, bw - cr, y1);
+    if (close) { p.lineTo(-bw + cr, y1); }
+    else {
+      p.lineTo(neck, y1);
+      p.quadraticCurveTo(hw, y1 + R * 0.12, hw, y1 + R * 0.6);
+      p.lineTo(hw * 0.92, y1 + hl - hw);
+      p.arc(0, y1 + hl - hw, hw * 0.92, 0, Math.PI);
+      p.lineTo(-hw, y1 + R * 0.6);
+      p.quadraticCurveTo(-hw, y1 + R * 0.12, -neck, y1);
+      p.lineTo(-bw + cr, y1);
+    }
+    p.quadraticCurveTo(-bw, y1, -bw, y1 - cr);
+    p.closePath();
+  };
+
   const blade = new Path2D();
-  blade.roundRect(-W / 2, bladeTop, W, L, [W * 0.2, W * 0.2, W * 0.32, W * 0.32]);
-  const handle = new Path2D();
-  handle.moveTo(-W * 0.2, bladeEnd - 4);
-  handle.lineTo(W * 0.2, bladeEnd - 4);
-  handle.lineTo(R * 0.24, bladeEnd + R * 0.6);
-  handle.lineTo(-R * 0.24, bladeEnd + R * 0.6);
-  handle.closePath();
-  handle.roundRect(-R * 0.24, bladeEnd + R * 0.5, R * 0.48, R * 3.3, R * 0.24);
+  edge(blade, true);
+  const shape = new Path2D();
+  edge(shape, false);
+
+  // rejilla de ranuras: cada fila se angosta un poco hacia atras, como la pala
+  const holes = new Path2D();
+  const rows = 4, cols = 7;
+  const top = y0 + L * 0.16, bottom = y1 - L * 0.13, rh = (bottom - top) / rows;
+  for (let r = 0; r < rows; r++) {
+    const yy = top + r * rh;
+    const half = fw - (fw - bw) * ((yy + rh / 2 - y0) / L) - W * 0.11;
+    const cw = (half * 2) / cols;
+    for (let c = 0; c < cols; c++) {
+      holes.roundRect(-half + c * cw + cw * 0.26, yy + rh * 0.12, cw * 0.48, rh * 0.76, cw * 0.24);
+    }
+  }
+  // agujero para colgarla
+  holes.moveTo(hw * 0.36, y1 + hl - hw * 1.7);
+  holes.ellipse(0, y1 + hl - hw * 1.7, hw * 0.36, hw * 0.7, 0, 0, TAU);
+
+  const cut = new Path2D();
+  cut.addPath(shape);
+  cut.addPath(holes);
+  return { W, L, y0, y1, hw, hl, blade, shape, holes, cut };
+}
+
+function drawScoop(g, e, x, y, s, lift) {
+  const R = e.R;
+  if (!e.scoop) e.scoop = scoopPaths(R);
+  const { W, y0, y1, hw, hl, blade, holes, cut } = e.scoop;
 
   g.save();
   g.translate(x, y);
   g.rotate(e.rot);
   g.scale(s, s);
 
-  // sombra sobre la arena (crece cuando se levanta)
+  // sombra sobre la arena: se aleja y se suaviza al levantar la pala
   g.save();
-  g.shadowColor = `rgba(12,8,3,${0.5 - lift * 0.15})`;
-  g.shadowBlur = 10 + lift * 26;
-  g.shadowOffsetX = 6 + lift * 22;
-  g.shadowOffsetY = 8 + lift * 30;
-  g.fillStyle = '#0c544b';
-  g.fill(blade);
-  g.fill(handle);
+  g.shadowColor = `rgba(12,8,3,${0.55 - lift * 0.15})`;
+  g.shadowBlur = 8 + lift * 26;
+  g.shadowOffsetX = 5 + lift * 22;
+  g.shadowOffsetY = 7 + lift * 30;
+  g.fillStyle = '#0b4b43';
+  g.fill(cut, 'evenodd');
   g.restore();
 
+  // plastico satinado con la luz entrando por la izquierda
   const plastic = g.createLinearGradient(-W / 2, 0, W / 2, 0);
-  plastic.addColorStop(0, '#16786b');
-  plastic.addColorStop(0.5, '#0d5a50');
-  plastic.addColorStop(1, '#08443c');
+  plastic.addColorStop(0, '#1a8475');
+  plastic.addColorStop(0.35, '#11695d');
+  plastic.addColorStop(1, '#0a4c43');
   g.fillStyle = plastic;
-  g.fill(blade);
-  g.fill(handle);
-  g.lineWidth = R * 0.09;
-  g.strokeStyle = '#05352f';
+  g.fill(cut, 'evenodd');
+
+  g.save();
+  g.clip(cut, 'evenodd');
+  // pared de la pala: un borde levantado mas claro y su sombra hacia adentro
+  g.lineJoin = 'round';
+  g.lineWidth = R * 0.3;
+  g.strokeStyle = 'rgba(0,26,22,0.35)';
   g.stroke(blade);
-
-  // ranuras
+  g.lineWidth = R * 0.16;
+  g.strokeStyle = '#1b8a7a';
+  g.stroke(blade);
+  g.lineWidth = R * 0.035;
+  g.strokeStyle = 'rgba(255,255,255,0.35)';
+  g.stroke(blade);
+  // brillo largo del plastico
+  const sheen = g.createLinearGradient(-W / 2, 0, W * 0.1, 0);
+  sheen.addColorStop(0, 'rgba(255,255,255,0)');
+  sheen.addColorStop(0.45, 'rgba(255,255,255,0.13)');
+  sheen.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = sheen;
+  g.fillRect(-W / 2, y0 - R, W, y1 + hl - y0 + R * 2);
+  // nervio central del mango y agarre antideslizante
+  g.lineCap = 'round';
+  g.lineWidth = R * 0.06;
+  g.strokeStyle = 'rgba(255,255,255,0.2)';
+  g.beginPath(); g.moveTo(-R * 0.03, y1 + R * 0.5); g.lineTo(-R * 0.03, y1 + hl - hw * 2.8); g.stroke();
+  g.strokeStyle = 'rgba(0,26,22,0.35)';
+  g.beginPath(); g.moveTo(R * 0.04, y1 + R * 0.5); g.lineTo(R * 0.04, y1 + hl - hw * 2.8); g.stroke();
+  g.lineWidth = R * 0.035;
   for (let i = 0; i < 6; i++) {
-    const sx = -W * 0.3 + i * (W * 0.6 / 5);
-    const slot = new Path2D();
-    slot.roundRect(sx - R * 0.065, -L * 0.3, R * 0.13, L * 0.58, R * 0.065);
-    g.fillStyle = '#04302a';
-    g.fill(slot);
-    g.fillStyle = 'rgba(255,255,255,0.12)';
-    g.fillRect(sx + R * 0.05, -L * 0.28, R * 0.02, L * 0.54);
+    const yy = y1 + hl * 0.42 + i * R * 0.2;
+    g.strokeStyle = 'rgba(0,26,22,0.4)';
+    g.beginPath(); g.moveTo(-hw * 0.6, yy); g.lineTo(hw * 0.6, yy); g.stroke();
+    g.strokeStyle = 'rgba(255,255,255,0.14)';
+    g.beginPath(); g.moveTo(-hw * 0.6, yy - R * 0.04); g.lineTo(hw * 0.6, yy - R * 0.04); g.stroke();
   }
+  g.restore();
 
-  // mango con agarre amarillo LOVET
-  const grip = new Path2D();
-  grip.roundRect(-R * 0.24, bladeEnd + R * 2.3, R * 0.48, R * 1.5, R * 0.24);
-  g.fillStyle = '#edde00';
-  g.fill(grip);
-  g.fillStyle = '#8f8500';
-  g.beginPath(); g.arc(0, bladeEnd + R * 3.45, R * 0.08, 0, TAU); g.fill();
-
-  // granos secos encima de la pala que caen por las ranuras
-  if (looseAlpha > 0) {
-    for (const l of e.loose) drawSprite(g, l.s, l.x, l.y + (1 - looseAlpha) * 6, l.r * (0.6 + looseAlpha * 0.4), looseAlpha);
-    g.globalAlpha = 1;
-  }
+  // canto de las ranuras: el grosor del plastico
+  g.lineWidth = R * 0.035;
+  g.strokeStyle = 'rgba(0,22,18,0.75)';
+  g.stroke(holes);
   g.restore();
 }
 
-// suelo dentro del recorte del evento: humedad, hueco y relleno
+// suelo alrededor del grumo: humedad, hueco y relleno
 function drawGround(g, e, t) {
   const wetK = easeOut(clamp01(t / 1000));
+  if (t < 2700) { wetTint(g, e, wetK); return; }
+  // al sacar el grumo queda un hueco que la arena de alrededor vuelve a cubrir
+  const fill = easeInOut(clamp01((t - 3300) / 900));
   g.save();
-  g.beginPath(); g.arc(e.x, e.y, e.clipR, 0, TAU); g.clip();
-  g.globalAlpha = 1;
+  g.clip(e.body);
   g.drawImage(FD.under, 0, 0, FD.w, FD.h);
-  for (const p of e.neighbors) drawSprite(g, p.s, p.x, p.y, p.r, 1);
-  if (t < 2700) {
-    g.globalAlpha = 0.22 * wetK;
-    g.fillStyle = '#3d2c1c';
-    g.fill(e.stain);
-  } else {
-    // hueco limpio que la arena de alrededor vuelve a cubrir
-    const fill = clamp01((t - 3300) / 900);
-    g.globalAlpha = 0.45 * (1 - fill);
-    g.fillStyle = '#120c06';
-    g.fill(e.body);
-    for (const m of e.members) {
-      const k = easeOut(clamp01((t - 3300 - m.rd) / 600));
-      if (k <= 0) continue;
-      const push = (1 - k) * FD.r * 1.6;
-      drawSprite(g, m.p.s, m.p.x + Math.cos(m.a) * push, m.p.y + Math.sin(m.a) * push, m.p.r, k);
-    }
-  }
+  g.shadowColor = 'rgba(15,9,3,0.85)';
+  g.shadowBlur = FD.r * 0.9;
+  g.lineWidth = FD.r * 0.5;
+  g.strokeStyle = 'rgba(15,9,3,0.6)';
+  g.stroke(e.body);
   g.restore();
+  if (fill > 0) {
+    const hole = new Path2D();
+    hole.addPath(e.body);
+    hole.addPath(blobOf(e, 0.92 * (1 - fill)));
+    g.save();
+    g.clip(hole, 'evenodd');
+    g.drawImage(FD.top, 0, 0, FD.w, FD.h);
+    g.restore();
+  }
+  wetTint(g, e, 1 - fill);
 }
 
 // pala y grumo, encima de todo
 function drawLifted(g, e, t) {
-  const wetK = easeOut(clamp01(t / 1000));
   const pull = easeInOut(clamp01((t - 1000) / 600));
   const approach = easeOut(clamp01((t - 1800) / 900));
   const lift = easeInOut(clamp01((t - 2700) / 500));
@@ -565,17 +613,17 @@ function drawLifted(g, e, t) {
     const away = (1 - approach) + carry; // 1 = fuera de la pantalla
     sx = e.x + e.dir[0] * e.travel * away;
     sy = e.y + e.dir[1] * e.travel * away - lift * 18;
-    drawScoop(g, e, sx, sy, 1 + lift * 0.14, lift, approach >= 1 ? 1 - lift : 0);
+    drawScoop(g, e, sx, sy, 1 + lift * 0.14, lift);
   }
   if (t < 2700) {
-    drawClump(g, e, wetK, pull, 0);
+    drawClump(g, e, pull, 0);
   } else if (scoopOn) {
     const s = 1 + lift * 0.14;
     g.save();
     g.translate(sx, sy);
     g.scale(s, s);
     g.translate(-e.x, -e.y);
-    drawClump(g, e, 1, 1, lift);
+    drawClump(g, e, 1, lift);
     g.restore();
   }
 }
@@ -589,7 +637,7 @@ function drawField(now) {
   for (const e of FD.events) drawLifted(g, e, now - e.t0);
   g.globalAlpha = 1;
   g.drawImage(FD.vignette, 0, 0, FD.w, FD.h);
-  grain(g, FD.w, FD.h, 0.16);
+  grain(g, FD.w, FD.h, 0.12);
 }
 
 function fieldTick(now) {
@@ -608,16 +656,17 @@ function randomClump(byUser) {
 }
 
 fieldCanvas.addEventListener('pointerdown', e => {
+  if (!FD.top) return;
   const rect = fieldCanvas.getBoundingClientRect();
   spawnClump(e.clientX - rect.left, e.clientY - rect.top, true);
 });
-$('#field-btn').addEventListener('click', () => randomClump(true));
+$('#field-btn').addEventListener('click', () => { if (FD.top) randomClump(true); });
 
 // demostracion automatica: un grumo nuevo cada pocos segundos
 function autoClump() {
   clearTimeout(FD.auto);
   if (reduceMotion || !isActive(fieldSection)) return;
-  if (!FD.events.length && performance.now() - FD.lastUser > 5000) randomClump(false);
+  if (FD.top && !FD.events.length && performance.now() - FD.lastUser > 5000) randomClump(false);
   FD.auto = setTimeout(autoClump, 5400);
 }
 function fieldEnter() {
@@ -629,134 +678,52 @@ function fieldLeave() {
 }
 
 /* =========================================================
-   4. PRESENTACIONES: cuanto te dura cada bolsa
-   ========================================================= */
-// supuestos de la estimacion (ajustar con datos reales de LOVET)
-const FILL_KG = 6;       // kg por caja en cada cambio completo
-const CHANGE_DAYS = 28;  // cambio completo cada 4 semanas
-const CAT_KG_DAY = 0.17; // grumos que se retiran al dia por gato
-const SIZES = [5, 10, 20];
-
-const calc = { cats: 1, boxes: 1 };
-const LIMITS = { cats: [1, 6], boxes: [1, 6] };
-const sizeEls = $$('.size');
-const sizePicks = $$('.size__pick');
-let pickedIdx = null;
-
-function durationText(days) {
-  if (days >= 56) return `unos ${decimal(Math.round((days / 30) * 2) / 2)} meses`;
-  if (days >= 14) return `unas ${decimal(Math.round((days / 7) * 2) / 2)} semanas`;
-  return `unos ${plural(Math.round(days), 'día', 'días')}`;
-}
-
-function updateCalc() {
-  const { cats, boxes } = calc;
-  $('#cats').textContent = cats;
-  $('#boxes').textContent = boxes;
-  $$('[data-step]').forEach(btn => {
-    const key = btn.dataset.step, next = calc[key] + Number(btn.dataset.delta);
-    btn.disabled = next < LIMITS[key][0] || next > LIMITS[key][1];
-  });
-
-  const kgDay = (boxes * FILL_KG) / CHANGE_DAYS + cats * CAT_KG_DAY;
-  const days = SIZES.map(kg => kg / kgDay);
-  // recomendamos la bolsa mas chica que dure al menos tres semanas
-  let rec = days.findIndex(d => d >= 21);
-  if (rec < 0) rec = SIZES.length - 1;
-  const sel = pickedIdx ?? rec;
-
-  sizeEls.forEach((li, i) => {
-    li.classList.toggle('is-rec', i === rec);
-    li.querySelector('.size__last strong').textContent = durationText(days[i]);
-    sizePicks[i].setAttribute('aria-checked', String(i === sel));
-    sizePicks[i].tabIndex = i === sel ? 0 : -1;
-  });
-
-  let tip;
-  if (boxes < cats) tip = 'Consejo veterinario: lo ideal es una caja por gato y una extra. Con menos cajas, algunos gatos dejan de usarlas.';
-  else if (boxes === cats) tip = 'Consejo veterinario: suma una caja extra a las que ya tienes, así cada gato encuentra una limpia.';
-  else tip = 'Bien: tienes una caja por gato y una extra, como recomiendan los veterinarios.';
-  $('#calc-tip').textContent = tip;
-
-  const kg = SIZES[sel];
-  const msg = `Hola LOVET, quiero pedir la bolsa de ${kg} kg de arena perlada. En casa tenemos ${plural(cats, 'gato', 'gatos')} y ${plural(boxes, 'caja', 'cajas')} de arena.`;
-  const wa = $('#wa-order');
-  wa.href = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(msg)}`;
-  $('#pick-name').textContent = `bolsa de ${kg} kg`;
-  $('#pick-last').textContent = `En tu casa dura ${durationText(days[sel])}.${sel === rec ? ' Es la ideal para tu casa.' : ''}`;
-  $('#calc-summary').textContent = `Te recomendamos la bolsa de ${SIZES[rec]} kilos: en tu casa dura ${durationText(days[rec])}.`;
-}
-
-$$('[data-step]').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const key = btn.dataset.step;
-    calc[key] = clamp(calc[key] + Number(btn.dataset.delta), LIMITS[key][0], LIMITS[key][1]);
-    pickedIdx = null;
-    updateCalc();
-  });
-});
-
-sizePicks.forEach((btn, i) => {
-  btn.addEventListener('click', () => {
-    pickedIdx = i;
-    updateCalc();
-  });
-  // flechas para moverse entre tamaños, como un grupo de opciones
-  btn.addEventListener('keydown', e => {
-    const step = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
-    if (!step) return;
-    e.preventDefault();
-    pickedIdx = (i + step + SIZES.length) % SIZES.length;
-    updateCalc();
-    sizePicks[pickedIdx].focus();
-  });
-});
-
-/* =========================================================
-   5. EL CAMBIO: una caja de arena que pasa de su arena actual
-   (gris, angulosa) a LOVET (perlas claras) dia a dia
+   4. EL CAMBIO: una caja de arena donde LOVET se va sumando
+   a su arena actual (gris, angulosa) en tres pasos
    ========================================================= */
 const MIX_STEPS = [
-  { share: 0.25, rule: 'Una parte de LOVET por tres de su arena actual.', days: 'los días 1 y 2' },
-  { share: 0.5, rule: 'Mitad LOVET y mitad su arena actual.', days: 'los días 3 y 4' },
-  { share: 0.75, rule: 'Tres partes de LOVET por una de su arena actual.', days: 'los días 5 y 6' },
-  { share: 1, rule: 'Solo LOVET: el cambio está hecho.', days: 'el día 7' }
+  { share: 0.15, label: 'un poco de LOVET mezclado con su arena habitual' },
+  { share: 0.4, label: 'más LOVET que en el primer paso, mezclado con su arena habitual' },
+  { share: 1, label: 'solo arena LOVET' }
 ];
-const STEP_MS = 3400;
+const STEP_MS = 4200;
 const mixCanvas = $('#mix-box');
-const dayTabs = $$('.days [role="tab"]');
-const MX = { g: null, w: 0, h: 0, pad: 0, slots: [], share: 0.25, from: 0.25, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
-
-// tazas medidoras: una taza = una parte
-const CUP_SVG = `<svg class="cup" viewBox="0 0 48 48">
-  <path class="cup__body" d="M9 15h26l-3 25a3 3 0 0 1-3 2.6H15a3 3 0 0 1-3-2.6z"/>
-  <g class="cup__pearls"><circle cx="15" cy="13" r="4"/><circle cx="22" cy="11" r="4.4"/><circle cx="29" cy="13" r="4"/></g>
-  <g class="cup__rocks"><path d="M11 15l3-5 5 1 1 4z"/><path d="M19 14l4-5 5 2-1 4z"/><path d="M27 15l2-4 5 1 0 3z"/></g>
-  <path class="cup__line" d="M9 15h26l-3 25a3 3 0 0 1-3 2.6H15a3 3 0 0 1-3-2.6zM35 19h3.5a4 4 0 0 1 0 8H33.5"/>
-</svg>`;
-$('.cups').innerHTML = CUP_SVG.repeat(4);
-const cups = $$('.cups .cup');
+const stepTabs = $$('.steps [role="tab"]');
+const MX = { g: null, w: 0, h: 0, pad: 0, rocks: [], patches: [], share: 0.15, from: 0.15, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
 
 function setupMixBox() {
   MX.w = mixCanvas.clientWidth;
   MX.h = mixCanvas.clientHeight;
-  if (!MX.w || !MX.h) return;
+  if (!MX.w || !MX.h || !sandReady()) return;
   MX.g = sizeCanvas(mixCanvas, MX.w, MX.h, 2);
   MX.pad = Math.min(MX.w, MX.h) * 0.07;
   const rnd = seeded(77);
-  const r = MX.w / 30, stepX = r * 1.65, stepY = r * 1.42;
-  const x0 = MX.pad, y0 = MX.pad, x1 = MX.w - MX.pad, y1 = MX.h - MX.pad;
-  MX.slots = [];
+  const x0 = MX.pad, y0 = MX.pad, iw = MX.w - MX.pad * 2, ih = MX.h - MX.pad * 2;
+  // las piedritas miden lo mismo que las perlas de la foto
+  const grainR = SAND_GRAIN_R * Math.max(iw / SAND.naturalWidth, ih / SAND.naturalHeight);
+  const r = grainR * 1.05, stepX = r * 1.65, stepY = r * 1.42;
+  MX.rocks = [];
   let row = 0;
-  for (let y = y0 - r * 0.5; y < y1 + r; y += stepY, row++) {
-    for (let x = x0 + (row % 2) * stepX / 2 - r * 0.5; x < x1 + r; x += stepX) {
-      MX.slots.push({
+  for (let y = y0 - r * 0.5; y < y0 + ih + r; y += stepY, row++) {
+    for (let x = x0 + (row % 2) * stepX / 2 - r * 0.5; x < x0 + iw + r; x += stepX) {
+      MX.rocks.push({
         x: x + (rnd() - 0.5) * r * 0.7, y: y + (rnd() - 0.5) * r * 0.6,
         r: r * (0.75 + rnd() * 0.45),
-        rank: rnd(), delay: rnd() * 0.55,
-        pearl: PEARLS[Math.floor(rnd() * PEARLS.length)],
-        rock: GRAINS[Math.floor(rnd() * GRAINS.length)]
+        s: ROCKS[Math.floor(rnd() * ROCKS.length)]
       });
+    }
+  }
+  // LOVET entra en puñados: manchas de perlas que crecen y se juntan
+  const cols = 6, cell = iw / cols, rows = Math.ceil(ih / cell);
+  MX.patches = [];
+  for (let j = 0; j < rows; j++) {
+    for (let i = 0; i < cols; i++) {
+      const cx = x0 + (i + 0.5 + (rnd() - 0.5) * 0.35) * cell;
+      const cy = y0 + (j + 0.5 + (rnd() - 0.5) * 0.35) * (ih / rows);
+      const R = cell * 0.95;
+      // contorno en coordenadas relativas, para poder escalar la mancha al crecer
+      const pts = clusterPoints(0, 0, R, grainR, rnd);
+      MX.patches.push({ x: cx, y: cy, pts, rank: rnd(), delay: rnd() * 0.5 });
     }
   }
   drawMix(performance.now());
@@ -782,30 +749,46 @@ function drawMix(now) {
 
   g.save();
   g.clip(inner);
-  const k = MX.t0 < 0 ? 1 : clamp01((now - MX.t0) / 1100);
-  for (const s of MX.slots) {
-    const isNew = s.rank < MX.share, wasNew = s.rank < MX.from;
-    let sprite = isNew ? s.pearl : s.rock, scale = 1;
-    if (isNew !== wasNew) {
-      // el grano cambia de tipo: se achica, se reemplaza y vuelve a crecer
-      const local = clamp01((k - s.delay) / 0.45);
-      if (local < 0.5) { sprite = wasNew ? s.pearl : s.rock; scale = 1 - local * 1.4; }
-      else scale = 0.3 + (local - 0.5) * 1.4;
+  for (const s of MX.rocks) drawSprite(g, s.s, s.x, s.y, s.r);
+
+  const k = MX.t0 < 0 ? 1 : clamp01((now - MX.t0) / 1300);
+  const lovet = new Path2D();
+  let any = false;
+  for (const p of MX.patches) {
+    const on = p.rank < MX.share, was = p.rank < MX.from;
+    let sc = on ? 1 : 0;
+    if (on !== was) {
+      const local = easeOut(clamp01((k - p.delay) / 0.5));
+      sc = on ? local : 1 - local;
     }
-    drawSprite(g, sprite, s.x, s.y, s.r * scale, 1);
+    if (sc < 0.02) continue;
+    any = true;
+    lovet.addPath(smoothPath(p.pts.map(([x, y]) => [p.x + x * sc, p.y + y * sc])));
   }
-  g.globalAlpha = 1;
+  if (any) {
+    g.save();
+    g.shadowColor = 'rgba(15,10,5,0.6)';
+    g.shadowBlur = pad * 0.5;
+    g.shadowOffsetY = pad * 0.12;
+    g.fillStyle = '#9a9086';
+    g.fill(lovet);
+    g.restore();
+    g.save();
+    g.clip(lovet);
+    drawSand(g, pad, pad, w - pad * 2, h - pad * 2, false);
+    g.restore();
+  }
   // sombra interior de las paredes de la caja
   g.lineWidth = pad * 0.9;
   g.strokeStyle = 'rgba(20,14,8,0.35)';
   g.stroke(inner);
   g.restore();
-  grain(g, w, h, 0.12);
+  grain(g, w, h, 0.1);
 }
 
 function mixTick(now) {
   drawMix(now);
-  MX.raf = now - MX.t0 < 1150 ? requestAnimationFrame(mixTick) : 0;
+  MX.raf = now - MX.t0 < 1350 ? requestAnimationFrame(mixTick) : 0;
 }
 
 function setMixStep(i, byUser) {
@@ -817,59 +800,52 @@ function setMixStep(i, byUser) {
   if (reduceMotion) drawMix(performance.now());
   else if (!MX.raf) MX.raf = requestAnimationFrame(mixTick);
 
-  dayTabs.forEach((tab, j) => {
+  stepTabs.forEach((tab, j) => {
     tab.setAttribute('aria-selected', String(j === i));
     tab.tabIndex = j === i ? 0 : -1;
   });
-  $('#mix-panel').setAttribute('aria-labelledby', dayTabs[i].id);
-  cups.forEach((cup, j) => cup.classList.toggle('is-lovet', j < step.share * 4));
-  $('#mix-rule').textContent = step.rule;
-  const pct = Math.round(step.share * 100);
-  const lovet = $('#ratio-lovet'), old = $('#ratio-old');
-  lovet.style.setProperty('--lovet', `${pct}%`);
-  lovet.textContent = `${pct}% LOVET`;
-  old.textContent = pct < 100 ? `${100 - pct}% su arena` : '';
-  old.hidden = pct >= 100;
-  mixCanvas.setAttribute('aria-label', `Caja de arena con la mezcla de ${step.days}: ${step.rule}`);
+  $('#mix-panel').setAttribute('aria-labelledby', stepTabs[i].id);
+  mixCanvas.setAttribute('aria-label', `Caja de arena con ${step.label}.`);
 
   if (byUser) {
     MX.userPicked = true;
     stopMixAuto();
   }
-  // reinicia la barrita de avance del boton activo
-  const days = $('.days');
-  days.classList.remove('is-playing');
-  if (!MX.userPicked && !reduceMotion) {
-    days.getBoundingClientRect();
-    days.classList.add('is-playing');
+  // reinicia la barrita de avance de la tarjeta activa
+  const steps = $('.steps');
+  steps.classList.remove('is-playing');
+  if (!MX.userPicked && !reduceMotion && MX.timer) {
+    steps.getBoundingClientRect();
+    steps.classList.add('is-playing');
   }
 }
 
 function startMixAuto() {
   stopMixAuto();
   if (MX.userPicked || reduceMotion) return;
-  $('.days').classList.add('is-playing');
+  $('.steps').classList.add('is-playing');
   MX.timer = setInterval(() => setMixStep((MX.step + 1) % MIX_STEPS.length, false), STEP_MS);
 }
 function stopMixAuto() {
   clearInterval(MX.timer);
-  $('.days').classList.remove('is-playing');
+  MX.timer = 0;
+  $('.steps').classList.remove('is-playing');
 }
 
-dayTabs.forEach((tab, i) => {
+stepTabs.forEach((tab, i) => {
   tab.addEventListener('click', () => setMixStep(i, true));
   tab.addEventListener('keydown', e => {
     const move = { ArrowRight: 1, ArrowLeft: -1 }[e.key];
     if (!move) return;
     e.preventDefault();
-    const next = (i + move + dayTabs.length) % dayTabs.length;
+    const next = (i + move + stepTabs.length) % stepTabs.length;
     setMixStep(next, true);
-    dayTabs[next].focus();
+    stepTabs[next].focus();
   });
 });
 
 /* =========================================================
-   6. DONDE COMPRAR: mapa con los puntos de venta
+   5. DONDE COMPRAR: mapa con los puntos de venta
    ========================================================= */
 // DATOS DE EJEMPLO: reemplazar por los distribuidores reales de LOVET
 const DISTRICTS = {
@@ -957,7 +933,7 @@ function renderStores() {
     : '';
 
   if (!list.length) {
-    storeList.appendChild(el('p', 'stores__empty', `No encontramos puntos de venta para “${storeQuery.value.trim()}”. Prueba con otro distrito o escríbenos por WhatsApp.`));
+    storeList.appendChild(el('p', 'stores__empty', `No encontramos puntos de venta para “${storeQuery.value.trim()}”. Prueba con otro distrito o tienda.`));
   }
   districts.forEach(d => {
     const items = list.filter(s => s.district === d);
@@ -1214,11 +1190,13 @@ nearBtn.addEventListener('click', () => {
 });
 
 /* =========================================================
-   7. CONTACTO
+   6. CONTACTO
    ========================================================= */
 const contactForm = $('#contact-form');
 const contactDone = $('#contact-done');
+const MAIL_TO = 'marketingpets@solvet.com.pe';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const CHECKED = ['c-name', 'c-mail', 'c-phone', 'c-ruc', 'c-msg'];
 
 function setError(id, msg) {
   const input = $(`#${id}`);
@@ -1229,21 +1207,35 @@ function setError(id, msg) {
 
 function checkField(id) {
   const v = $(`#${id}`).value.trim();
-  if (id === 'c-name') setError(id, v ? '' : 'Escribe tu nombre.');
+  if (id === 'c-name') setError(id, v ? '' : 'Escribe tu nombre completo.');
   if (id === 'c-mail') setError(id, EMAIL_RE.test(v) ? '' : 'Escribe un correo válido, por ejemplo nombre@correo.com.');
   if (id === 'c-phone') setError(id, !v || /^(\+?51)?\d{7,9}$/.test(v.replace(/[\s-]/g, '')) ? '' : 'Escribe un número válido, por ejemplo 987 654 321.');
+  if (id === 'c-ruc') setError(id, !v || /^\d{11}$/.test(v) ? '' : 'El RUC tiene 11 dígitos, por ejemplo 20123456789.');
   if (id === 'c-msg') setError(id, v ? '' : 'Cuéntanos en qué te podemos ayudar.');
 }
 
+// sin servidor: el envio abre el correo del visitante con el mensaje listo para LOVET
 contactForm.addEventListener('submit', e => {
   e.preventDefault();
-  ['c-name', 'c-mail', 'c-phone', 'c-msg'].forEach(checkField);
+  CHECKED.forEach(checkField);
   const firstBad = contactForm.querySelector('[aria-invalid="true"]');
   if (firstBad) { firstBad.focus(); return; }
-  // aqui se conecta el envio real (Formspree, backend propio, CRM...)
-  const name = $('#c-name').value.trim(), mail = $('#c-mail').value.trim();
-  const news = $('#c-news').checked ? ' También te sumamos a los correos de novedades.' : '';
-  $('#contact-done-text').textContent = `Gracias, ${name}. Te responderemos a ${mail}.${news}`;
+  const val = id => $(`#${id}`).value.trim();
+  const name = val('c-name'), biz = val('c-biz'), who = val('c-who');
+  const lines = [
+    `Nombre completo: ${name}`,
+    biz && `Nombre comercial: ${biz}`,
+    `Correo: ${val('c-mail')}`,
+    val('c-phone') && `Número: ${val('c-phone')}`,
+    val('c-place') && `Distrito / Provincia: ${val('c-place')}`,
+    val('c-ruc') && `RUC: ${val('c-ruc')}`,
+    `¿Quién nos escribe?: ${who}`,
+    '',
+    val('c-msg')
+  ].filter(line => typeof line === 'string');
+  const subject = `Contacto web LOVET: ${who}${biz ? ` (${biz})` : ''}`;
+  window.location.href = `mailto:${MAIL_TO}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\r\n'))}`;
+  $('#contact-done-text').textContent = `Gracias, ${name}. Abrimos tu programa de correo con el mensaje para ${MAIL_TO}: solo falta que lo envíes. Si no se abrió, escríbenos directamente a esa dirección.`;
   contactForm.hidden = true;
   contactDone.hidden = false;
   contactDone.focus();
@@ -1481,13 +1473,13 @@ function setupAll() {
   setupMixBox();
 }
 
-updateCalc();
 setMixStep(0, false);
 renderStores();
 window.addEventListener('load', () => {
   chooseMode();
   setupAll();
 });
+SAND.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); });
 
 let resizeTimer;
 window.addEventListener('resize', () => {

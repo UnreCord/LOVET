@@ -48,8 +48,8 @@ const SAND_GRAIN_R = 24; // radio de una perla en la foto, en px de la foto
 const sandReady = () => SAND.complete && SAND.naturalWidth > 0;
 
 // pinta la foto cubriendo el area, como object-fit: cover; devuelve la escala usada
-function drawSand(g, x, y, w, h, flip) {
-  const s = Math.max(w / SAND.naturalWidth, h / SAND.naturalHeight);
+function drawSand(g, x, y, w, h, flip, zoom = 1) {
+  const s = Math.max(w / SAND.naturalWidth, h / SAND.naturalHeight) * zoom;
   const dw = SAND.naturalWidth * s, dh = SAND.naturalHeight * s;
   g.save();
   g.translate(x + w / 2, y + h / 2);
@@ -70,65 +70,6 @@ function smoothPath(pts) {
   }
   p.closePath();
   return p;
-}
-
-/* piedritas grises y angulosas: la arena comun que se reemplaza */
-const SPR = 96, SPR_R = 30;
-
-function rockPath(R, rnd) {
-  const n = 6 + Math.floor(rnd() * 3), p = new Path2D();
-  for (let i = 0; i < n; i++) {
-    const t = (i / n) * Math.PI * 2 + rnd() * 0.5, r = R * (0.72 + rnd() * 0.4);
-    if (i) p.lineTo(Math.cos(t) * r, Math.sin(t) * r);
-    else p.moveTo(Math.cos(t) * r, Math.sin(t) * r);
-  }
-  p.closePath();
-  return p;
-}
-
-function rockSprite(rnd, tone) {
-  const c = document.createElement('canvas');
-  c.width = c.height = SPR;
-  const g = c.getContext('2d');
-  g.translate(SPR / 2, SPR / 2);
-  const path = rockPath(SPR_R, rnd);
-
-  // sombra de contacto con los granos de alrededor
-  g.save();
-  g.shadowColor = 'rgba(28,18,8,0.55)';
-  g.shadowBlur = 9;
-  g.shadowOffsetX = 2;
-  g.shadowOffsetY = 4;
-  g.fillStyle = tone;
-  g.fill(path);
-  g.restore();
-
-  g.save();
-  g.clip(path);
-  const light = g.createLinearGradient(-SPR_R, -SPR_R, SPR_R, SPR_R);
-  light.addColorStop(0, 'rgba(255,252,244,0.24)');
-  light.addColorStop(0.45, 'rgba(255,252,244,0)');
-  light.addColorStop(1, 'rgba(40,28,14,0.5)');
-  g.fillStyle = light;
-  g.fillRect(-SPR_R * 1.4, -SPR_R * 1.4, SPR_R * 2.8, SPR_R * 2.8);
-  g.lineWidth = SPR_R * 0.22;
-  g.strokeStyle = 'rgba(55,40,24,0.22)';
-  g.stroke(path);
-  for (let i = 0; i < 320; i++) {
-    const x = (rnd() - 0.5) * SPR_R * 2.2, y = (rnd() - 0.5) * SPR_R * 2.2, s = 0.7 + rnd() * 1.5;
-    g.fillStyle = rnd() < 0.5 ? `rgba(255,255,248,${0.06 + rnd() * 0.12})` : `rgba(75,56,36,${0.05 + rnd() * 0.1})`;
-    g.fillRect(x, y, s, s);
-  }
-  g.restore();
-  return c;
-}
-
-const rndSprites = seeded(7);
-const ROCKS = ['#7d8186', '#6d7176', '#8b8f94', '#62666b', '#757a7f', '#868a8e'].flatMap(t => [rockSprite(rndSprites, t), rockSprite(rndSprites, t)]);
-
-// el sprite mide 96px y el grano 30px de radio: 96/30 = 3.2
-function drawSprite(g, s, x, y, r) {
-  g.drawImage(s, x - r * 1.6, y - r * 1.6, r * 3.2, r * 3.2);
 }
 
 // grano fotografico para que el canvas no se vea "digital"
@@ -678,79 +619,91 @@ function fieldLeave() {
 }
 
 /* =========================================================
-   4. EL CAMBIO: una caja de arena donde LOVET se va sumando
-   a su arena actual (gris, angulosa) en tres pasos
+   4. EL CAMBIO: un arenero donde LOVET se va sumando a su
+   arena de siempre en tres pasos
    ========================================================= */
 const MIX_STEPS = [
-  { share: 0.15, label: 'un poco de LOVET mezclado con su arena habitual' },
-  { share: 0.4, label: 'más LOVET que en el primer paso, mezclado con su arena habitual' },
+  // cada puñado cubre unas tres celdas: con 7% y 22% se ve un poco y casi la mitad
+  { share: 0.07, label: 'un poco de LOVET mezclado con su arena habitual' },
+  { share: 0.22, label: 'más LOVET que en el primer paso, mezclado con su arena habitual' },
   { share: 1, label: 'solo arena LOVET' }
 ];
 const STEP_MS = 4200;
 const mixCanvas = $('#mix-box');
 const stepTabs = $$('.steps [role="tab"]');
-const MX = { g: null, w: 0, h: 0, pad: 0, rocks: [], patches: [], share: 0.15, from: 0.15, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
+const MX = { g: null, w: 0, h: 0, box: null, flat: null, fg: null, common: null, lovet: null, patches: [], share: 0.07, from: 0.07, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
+
+// arena comun: foto real de una arena gris con puntitos de color, en mosaico sin costuras
+const COMMON = new Image();
+COMMON.src = 'assets/arena-comun.jpg';
+const commonReady = () => COMMON.complete && COMMON.naturalWidth > 0;
+
+/* arenero visto en tres cuartos: el borde de arriba, la pared de
+   adelante y, adentro, la arena en perspectiva */
+function boxGeometry(w, h) {
+  const cx = w / 2;
+  const rim = { y0: h * 0.06, y1: h * 0.72, b: w * 0.39, f: w * 0.478 };    // borde exterior: atras y adelante
+  const t = w * 0.03;                                                        // grosor del borde
+  const open = { y0: rim.y0 + t * 0.55, y1: rim.y1 - t * 0.85, b: rim.b - t * 0.85, f: rim.f - t };
+  const sand = { y0: open.y0 + h * 0.06, y1: open.y1 - h * 0.004, b: open.b - w * 0.018, f: open.f - w * 0.004 };
+  const base = { y: h * 0.9, f: w * 0.45 };                                  // la pared de adelante se angosta hacia el piso
+  return { cx, rim, t, open, sand, base };
+}
+
+// trapecio con esquinas redondeadas
+function trapezoid(cx, q, r) {
+  const p = new Path2D();
+  const pts = [[cx - q.b, q.y0], [cx + q.b, q.y0], [cx + q.f, q.y1], [cx - q.f, q.y1]];
+  p.moveTo((pts[0][0] + pts[1][0]) / 2, q.y0);
+  for (let i = 1; i <= 4; i++) p.arcTo(pts[i % 4][0], pts[i % 4][1], pts[(i + 1) % 4][0], pts[(i + 1) % 4][1], r);
+  p.closePath();
+  return p;
+}
 
 function setupMixBox() {
   MX.w = mixCanvas.clientWidth;
   MX.h = mixCanvas.clientHeight;
-  if (!MX.w || !MX.h || !sandReady()) return;
+  if (!MX.w || !MX.h || !sandReady() || !commonReady()) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   MX.g = sizeCanvas(mixCanvas, MX.w, MX.h, 2);
-  MX.pad = Math.min(MX.w, MX.h) * 0.07;
-  const rnd = seeded(77);
-  const x0 = MX.pad, y0 = MX.pad, iw = MX.w - MX.pad * 2, ih = MX.h - MX.pad * 2;
-  // las piedritas miden lo mismo que las perlas de la foto
-  const grainR = SAND_GRAIN_R * Math.max(iw / SAND.naturalWidth, ih / SAND.naturalHeight);
-  const r = grainR * 1.05, stepX = r * 1.65, stepY = r * 1.42;
-  MX.rocks = [];
-  let row = 0;
-  for (let y = y0 - r * 0.5; y < y0 + ih + r; y += stepY, row++) {
-    for (let x = x0 + (row % 2) * stepX / 2 - r * 0.5; x < x0 + iw + r; x += stepX) {
-      MX.rocks.push({
-        x: x + (rnd() - 0.5) * r * 0.7, y: y + (rnd() - 0.5) * r * 0.6,
-        r: r * (0.75 + rnd() * 0.45),
-        s: ROCKS[Math.floor(rnd() * ROCKS.length)]
-      });
-    }
-  }
+  MX.box = boxGeometry(MX.w, MX.h);
+
+  // la arena se arma vista desde arriba en un lienzo plano y luego se proyecta
+  const FW = Math.round(MX.box.sand.f * 2), FH = Math.round((MX.box.sand.y1 - MX.box.sand.y0) * 1.3);
+  MX.fw = FW;
+  MX.fh = FH;
+  let g;
+  [MX.common, g] = offscreen(FW, FH, dpr);
+  const cs = FW / 560; // granos de la arena comun algo mas finos que las perlas LOVET
+  g.save();
+  g.scale(cs, cs);
+  g.fillStyle = g.createPattern(COMMON, 'repeat');
+  g.fillRect(0, 0, FW / cs, FH / cs);
+  g.restore();
+  [MX.lovet, g] = offscreen(FW, FH, dpr);
+  const grainR = SAND_GRAIN_R * drawSand(g, 0, 0, FW, FH, false, 1.35);
+  [MX.flat, MX.fg] = offscreen(FW, FH, dpr);
+
   // LOVET entra en puñados: manchas de perlas que crecen y se juntan
-  const cols = 6, cell = iw / cols, rows = Math.ceil(ih / cell);
+  const rnd = seeded(77);
+  const cols = 9, cell = FW / cols, rows = Math.ceil(FH / cell);
   MX.patches = [];
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
-      const cx = x0 + (i + 0.5 + (rnd() - 0.5) * 0.35) * cell;
-      const cy = y0 + (j + 0.5 + (rnd() - 0.5) * 0.35) * (ih / rows);
-      const R = cell * 0.95;
-      // contorno en coordenadas relativas, para poder escalar la mancha al crecer
-      const pts = clusterPoints(0, 0, R, grainR, rnd);
-      MX.patches.push({ x: cx, y: cy, pts, rank: rnd(), delay: rnd() * 0.5 });
+      const cx = (i + 0.5 + (rnd() - 0.5) * 0.35) * cell;
+      const cy = (j + 0.5 + (rnd() - 0.5) * 0.35) * (FH / rows);
+      // contorno relativo al centro, para poder escalar la mancha al crecer
+      MX.patches.push({ x: cx, y: cy, pts: clusterPoints(0, 0, cell * 0.95, grainR, rnd), rank: rnd(), delay: rnd() * 0.5 });
     }
   }
   drawMix(performance.now());
 }
 
-function drawMix(now) {
-  const g = MX.g;
-  if (!g) return;
-  const { w, h, pad } = MX;
-  g.clearRect(0, 0, w, h);
-  // caja de plastico vista desde arriba
-  const outer = new Path2D();
-  outer.roundRect(0, 0, w, h, Math.min(w, h) * 0.08);
-  const rim = g.createLinearGradient(0, 0, 0, h);
-  rim.addColorStop(0, '#f3f5f2');
-  rim.addColorStop(1, '#cfd6d0');
-  g.fillStyle = rim;
-  g.fill(outer);
-  const inner = new Path2D();
-  inner.roundRect(pad, pad, w - pad * 2, h - pad * 2, Math.min(w, h) * 0.05);
-  g.fillStyle = '#3a3128';
-  g.fill(inner);
-
-  g.save();
-  g.clip(inner);
-  for (const s of MX.rocks) drawSprite(g, s.s, s.x, s.y, s.r);
-
+// mezcla vista desde arriba: arena comun y manchas de LOVET encima
+function drawFlat(now) {
+  const g = MX.fg, { fw, fh } = MX;
+  g.globalAlpha = 1;
+  g.drawImage(MX.common, 0, 0, fw, fh);
   const k = MX.t0 < 0 ? 1 : clamp01((now - MX.t0) / 1300);
   const lovet = new Path2D();
   let any = false;
@@ -765,25 +718,124 @@ function drawMix(now) {
     any = true;
     lovet.addPath(smoothPath(p.pts.map(([x, y]) => [p.x + x * sc, p.y + y * sc])));
   }
-  if (any) {
-    g.save();
-    g.shadowColor = 'rgba(15,10,5,0.6)';
-    g.shadowBlur = pad * 0.5;
-    g.shadowOffsetY = pad * 0.12;
-    g.fillStyle = '#9a9086';
-    g.fill(lovet);
-    g.restore();
-    g.save();
-    g.clip(lovet);
-    drawSand(g, pad, pad, w - pad * 2, h - pad * 2, false);
-    g.restore();
+  if (!any) return;
+  g.save();
+  g.shadowColor = 'rgba(30,26,22,0.55)';
+  g.shadowBlur = fw * 0.012;
+  g.shadowOffsetY = fw * 0.004;
+  g.fillStyle = '#b7aea4';
+  g.fill(lovet);
+  g.restore();
+  g.save();
+  g.clip(lovet);
+  g.drawImage(MX.lovet, 0, 0, fw, fh);
+  g.restore();
+}
+
+function drawMix(now) {
+  const g = MX.g;
+  if (!g) return;
+  const { w, h, box } = MX;
+  const { cx, rim, open, sand, base } = box;
+  g.clearRect(0, 0, w, h);
+
+  // sombra del arenero en el piso
+  // (solo se ve la sombra difusa: la elipse queda fuera del lienzo)
+  g.save();
+  g.shadowColor = 'rgba(0,14,12,0.6)';
+  g.shadowBlur = 28;
+  g.shadowOffsetY = 10000;
+  g.beginPath();
+  g.ellipse(cx, base.y + h * 0.015 - 10000, base.f * 1.04, h * 0.05, 0, 0, TAU);
+  g.fill();
+  g.restore();
+
+  // pared de adelante, por fuera
+  const front = new Path2D();
+  const r = w * 0.03;
+  front.moveTo(cx - rim.f, rim.y1 - r);
+  front.lineTo(cx + rim.f, rim.y1 - r);
+  front.lineTo(cx + base.f, base.y - r);
+  front.quadraticCurveTo(cx + base.f, base.y, cx + base.f - r * 1.5, base.y);
+  front.lineTo(cx - base.f + r * 1.5, base.y);
+  front.quadraticCurveTo(cx - base.f, base.y, cx - base.f, base.y - r);
+  front.closePath();
+  const wall = g.createLinearGradient(0, rim.y1, 0, base.y);
+  wall.addColorStop(0, '#b9bdbb');
+  wall.addColorStop(1, '#868b89');
+  g.fillStyle = wall;
+  g.fill(front);
+  const side = g.createLinearGradient(cx - rim.f, 0, cx + rim.f, 0);
+  side.addColorStop(0, 'rgba(0,0,0,0.22)');
+  side.addColorStop(0.18, 'rgba(0,0,0,0)');
+  side.addColorStop(0.82, 'rgba(0,0,0,0)');
+  side.addColorStop(1, 'rgba(0,0,0,0.25)');
+  g.fillStyle = side;
+  g.fill(front);
+
+  // borde de arriba
+  const top = trapezoid(cx, rim, w * 0.045);
+  const rimFill = g.createLinearGradient(0, rim.y0, 0, rim.y1);
+  rimFill.addColorStop(0, '#c9cdcb');
+  rimFill.addColorStop(1, '#e3e6e4');
+  g.fillStyle = rimFill;
+  g.fill(top);
+  g.lineWidth = 1.5;
+  g.strokeStyle = 'rgba(255,255,255,0.7)';
+  g.stroke(top);
+
+  // adentro: paredes interiores en sombra
+  const inner = trapezoid(cx, open, w * 0.03);
+  g.save();
+  g.clip(inner);
+  const innerWall = g.createLinearGradient(0, open.y0, 0, sand.y0 + h * 0.04);
+  innerWall.addColorStop(0, '#9fa4a2');
+  innerWall.addColorStop(1, '#6f7472');
+  g.fillStyle = innerWall;
+  g.fillRect(0, 0, w, h);
+
+  // la arena en perspectiva: se dibuja por franjas, mas angostas al fondo
+  drawFlat(now);
+  const sandPath = trapezoid(cx, sand, w * 0.02);
+  g.save();
+  g.clip(sandPath);
+  const strips = Math.ceil(sand.y1 - sand.y0);
+  for (let i = 0; i < strips; i++) {
+    const v = i / strips, half = sand.b + (sand.f - sand.b) * v;
+    g.drawImage(MX.flat, 0, v * MX.flat.height, MX.flat.width, MX.flat.height / strips,
+      cx - half, sand.y0 + i, half * 2, 1.6);
   }
-  // sombra interior de las paredes de la caja
-  g.lineWidth = pad * 0.9;
-  g.strokeStyle = 'rgba(20,14,8,0.35)';
+  // luz: el fondo y los costados quedan bajo la sombra de las paredes
+  const depth = g.createLinearGradient(0, sand.y0, 0, sand.y1);
+  depth.addColorStop(0, 'rgba(20,18,16,0.5)');
+  depth.addColorStop(0.22, 'rgba(20,18,16,0.12)');
+  depth.addColorStop(1, 'rgba(255,255,255,0.04)');
+  g.fillStyle = depth;
+  g.fillRect(0, 0, w, h);
+  const sides = g.createLinearGradient(cx - sand.f, 0, cx + sand.f, 0);
+  sides.addColorStop(0, 'rgba(20,18,16,0.3)');
+  sides.addColorStop(0.1, 'rgba(20,18,16,0)');
+  sides.addColorStop(0.9, 'rgba(20,18,16,0)');
+  sides.addColorStop(1, 'rgba(20,18,16,0.3)');
+  g.fillStyle = sides;
+  g.fillRect(0, 0, w, h);
+  g.restore();
+  // sombra que el borde de adelante deja sobre la arena
+  g.lineWidth = w * 0.012;
+  g.strokeStyle = 'rgba(20,18,16,0.25)';
   g.stroke(inner);
   g.restore();
-  grain(g, w, h, 0.1);
+
+  // canto del borde, con brillo
+  g.lineWidth = 1.2;
+  g.strokeStyle = 'rgba(70,75,73,0.6)';
+  g.stroke(inner);
+  g.beginPath();
+  g.moveTo(cx - rim.f + w * 0.03, rim.y1);
+  g.lineTo(cx + rim.f - w * 0.03, rim.y1);
+  g.lineWidth = 2;
+  g.strokeStyle = 'rgba(255,255,255,0.75)';
+  g.stroke();
 }
 
 function mixTick(now) {
@@ -1479,7 +1531,7 @@ window.addEventListener('load', () => {
   chooseMode();
   setupAll();
 });
-SAND.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); });
+[SAND, COMMON].forEach(img => img.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); }));
 
 let resizeTimer;
 window.addEventListener('resize', () => {

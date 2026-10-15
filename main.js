@@ -1,6 +1,8 @@
 // LOVET - interacciones de la pagina
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+// ruta de las imagenes: junto a la pagina, o la carpeta del tema en WordPress (window.LOVET_BASE)
+const asset = path => (window.LOVET_BASE || '') + path;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 // misma condicion que en styles.css: celulares y tablets en vertical usan una sola columna
 const stacked = matchMedia('(max-width: 1023px) and (orientation: portrait), (max-width: 639px)');
@@ -50,8 +52,8 @@ function texture(src, grainR) {
   img.grainR = grainR; // radio de una perla en la foto, en px de la foto
   return img;
 }
-const SAND = texture('assets/arena-lovet.jpg', 6);          // "Toca la arena" y el arenero
-const SAND_BAG = texture('assets/arena-lovet-bolsa.jpg', 8); // dentro de la bolsa
+const SAND = texture(asset('assets/arena-lovet.jpg'), 6);          // "Toca la arena" y el arenero
+const SAND_BAG = texture(asset('assets/arena-lovet-bolsa.jpg'), 8); // dentro de la bolsa
 const loaded = img => img.complete && img.naturalWidth > 0;
 const sandReady = () => loaded(SAND) && loaded(SAND_BAG);
 
@@ -646,9 +648,9 @@ const MX = { g: null, w: 0, h: 0, rect: null, flat: null, fg: null, lovet: null,
 // arenero real (foto recortada, con su sombra) con arena comun gris de puntitos,
 // y la mascara de la zona de arena donde se va sumando LOVET
 const TRAY = new Image();
-TRAY.src = 'assets/arenero.webp';
+TRAY.src = asset('assets/arenero.webp');
 const TRAY_SAND = new Image();
-TRAY_SAND.src = 'assets/arenero-arena.png';
+TRAY_SAND.src = asset('assets/arenero-arena.png');
 const trayReady = () => [TRAY, TRAY_SAND].every(img => img.complete && img.naturalWidth > 0);
 // superficie de la arena en la foto, en fracciones del ancho y alto:
 // y del borde de atras y de adelante, y x de sus extremos izquierdo y derecho.
@@ -866,7 +868,7 @@ const STORES = [
   ['SPAR Exclub', 'spar-exclub', 'Supermercado', 'San Miguel', 'Av. La Marina cdra. 20', 0.001, 0.002],
   ['Super Grup', 'super-grup', 'Supermercado', 'La Molina', 'Av. La Molina cdra. 12', 0, 0]
 ].map(([name, logo, type, district, addr, dLat, dLng], id) => ({
-  id, name, logo: `assets/logos/${logo}.png`, type, district, addr,
+  id, name, logo: asset(`assets/logos/${logo}.png`), type, district, addr,
   lat: DISTRICTS[district][0] + dLat,
   lng: DISTRICTS[district][1] + dLng
 }));

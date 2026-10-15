@@ -1,7 +1,11 @@
 // LOVET - interacciones de la pagina
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
+// ruta de las imagenes: junto a la pagina, o la carpeta del tema en WordPress (window.LOVET_BASE)
+const asset = path => (window.LOVET_BASE || '') + path;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// misma condicion que en styles.css: celulares y tablets en vertical usan una sola columna
+const stacked = matchMedia('(max-width: 1023px) and (orientation: portrait), (max-width: 639px)');
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const clamp01 = v => clamp(v, 0, 1);
@@ -42,19 +46,25 @@ function offscreen(w, h, dpr) {
    La textura es la foto real de la arena: perlas claras y
    porosas con perlitas verdes. Asi se ve igual que el producto.
    ========================================================= */
-const SAND = new Image();
-SAND.src = 'assets/arena-lovet.jpg';
-const SAND_GRAIN_R = 24; // radio de una perla en la foto, en px de la foto
-const sandReady = () => SAND.complete && SAND.naturalWidth > 0;
+function texture(src, grainR) {
+  const img = new Image();
+  img.src = src;
+  img.grainR = grainR; // radio de una perla en la foto, en px de la foto
+  return img;
+}
+const SAND = texture(asset('assets/arena-lovet.jpg'), 6);          // "Toca la arena" y el arenero
+const SAND_BAG = texture(asset('assets/arena-lovet-bolsa.jpg'), 8); // dentro de la bolsa
+const loaded = img => img.complete && img.naturalWidth > 0;
+const sandReady = () => loaded(SAND) && loaded(SAND_BAG);
 
 // pinta la foto cubriendo el area, como object-fit: cover; devuelve la escala usada
-function drawSand(g, x, y, w, h, flip) {
-  const s = Math.max(w / SAND.naturalWidth, h / SAND.naturalHeight);
-  const dw = SAND.naturalWidth * s, dh = SAND.naturalHeight * s;
+function drawSand(g, x, y, w, h, flip, zoom = 1, img = SAND) {
+  const s = Math.max(w / img.naturalWidth, h / img.naturalHeight) * zoom;
+  const dw = img.naturalWidth * s, dh = img.naturalHeight * s;
   g.save();
   g.translate(x + w / 2, y + h / 2);
   if (flip) g.scale(-1, -1);
-  g.drawImage(SAND, -dw / 2, -dh / 2, dw, dh);
+  g.drawImage(img, -dw / 2, -dh / 2, dw, dh);
   g.restore();
   return s;
 }
@@ -70,65 +80,6 @@ function smoothPath(pts) {
   }
   p.closePath();
   return p;
-}
-
-/* piedritas grises y angulosas: la arena comun que se reemplaza */
-const SPR = 96, SPR_R = 30;
-
-function rockPath(R, rnd) {
-  const n = 6 + Math.floor(rnd() * 3), p = new Path2D();
-  for (let i = 0; i < n; i++) {
-    const t = (i / n) * Math.PI * 2 + rnd() * 0.5, r = R * (0.72 + rnd() * 0.4);
-    if (i) p.lineTo(Math.cos(t) * r, Math.sin(t) * r);
-    else p.moveTo(Math.cos(t) * r, Math.sin(t) * r);
-  }
-  p.closePath();
-  return p;
-}
-
-function rockSprite(rnd, tone) {
-  const c = document.createElement('canvas');
-  c.width = c.height = SPR;
-  const g = c.getContext('2d');
-  g.translate(SPR / 2, SPR / 2);
-  const path = rockPath(SPR_R, rnd);
-
-  // sombra de contacto con los granos de alrededor
-  g.save();
-  g.shadowColor = 'rgba(28,18,8,0.55)';
-  g.shadowBlur = 9;
-  g.shadowOffsetX = 2;
-  g.shadowOffsetY = 4;
-  g.fillStyle = tone;
-  g.fill(path);
-  g.restore();
-
-  g.save();
-  g.clip(path);
-  const light = g.createLinearGradient(-SPR_R, -SPR_R, SPR_R, SPR_R);
-  light.addColorStop(0, 'rgba(255,252,244,0.24)');
-  light.addColorStop(0.45, 'rgba(255,252,244,0)');
-  light.addColorStop(1, 'rgba(40,28,14,0.5)');
-  g.fillStyle = light;
-  g.fillRect(-SPR_R * 1.4, -SPR_R * 1.4, SPR_R * 2.8, SPR_R * 2.8);
-  g.lineWidth = SPR_R * 0.22;
-  g.strokeStyle = 'rgba(55,40,24,0.22)';
-  g.stroke(path);
-  for (let i = 0; i < 320; i++) {
-    const x = (rnd() - 0.5) * SPR_R * 2.2, y = (rnd() - 0.5) * SPR_R * 2.2, s = 0.7 + rnd() * 1.5;
-    g.fillStyle = rnd() < 0.5 ? `rgba(255,255,248,${0.06 + rnd() * 0.12})` : `rgba(75,56,36,${0.05 + rnd() * 0.1})`;
-    g.fillRect(x, y, s, s);
-  }
-  g.restore();
-  return c;
-}
-
-const rndSprites = seeded(7);
-const ROCKS = ['#7d8186', '#6d7176', '#8b8f94', '#62666b', '#757a7f', '#868a8e'].flatMap(t => [rockSprite(rndSprites, t), rockSprite(rndSprites, t)]);
-
-// el sprite mide 96px y el grano 30px de radio: 96/30 = 3.2
-function drawSprite(g, s, x, y, r) {
-  g.drawImage(s, x - r * 1.6, y - r * 1.6, r * 3.2, r * 3.2);
 }
 
 // grano fotografico para que el canvas no se vea "digital"
@@ -207,7 +158,7 @@ function setupBag() {
   g.restore();
   g.save();
   g.clip(fill);
-  drawSand(g, 0, top * 0.8, B.w, B.h - top * 0.8, false);
+  drawSand(g, 0, top * 0.8, B.w, B.h - top * 0.8, false, 1.3, SAND_BAG);
   // adentro de la bolsa hay menos luz: la parte de arriba queda en sombra
   const depth = g.createLinearGradient(0, top * 0.8, 0, B.h);
   depth.addColorStop(0, 'rgba(10,22,18,0.55)');
@@ -321,7 +272,7 @@ function heroIntro() {
    ========================================================= */
 const fieldSection = $('#tocala');
 const fieldCanvas = $('#field');
-const FD = { g: null, w: 0, h: 0, r: 20, under: null, top: null, vignette: null, events: [], raf: 0, auto: 0, lastUser: -1e9 };
+const FD = { g: null, w: 0, h: 0, r: 6, u: 20, under: null, top: null, vignette: null, events: [], raf: 0, auto: 0, lastUser: -1e9 };
 const TAU = Math.PI * 2;
 const EVENT_MS = 4600;
 
@@ -335,7 +286,9 @@ function setupField() {
 
   let g;
   [FD.top, g] = offscreen(FD.w, FD.h, dpr);
-  FD.r = SAND_GRAIN_R * drawSand(g, 0, 0, FD.w, FD.h, false);
+  FD.r = SAND.grainR * drawSand(g, 0, 0, FD.w, FD.h, false);
+  // medida del grumo, independiente del tamaño de las perlas de la foto
+  FD.u = clamp(Math.min(FD.w, FD.h) / 37, 17, 26);
 
   // capa de abajo: otras perlas, en sombra, que se ven en el hueco cuando sale el grumo
   [FD.under, g] = offscreen(FD.w, FD.h, dpr);
@@ -369,7 +322,7 @@ function blobOf(e, scale) {
 function spawnClump(x, y, byUser) {
   const now = performance.now();
   if (FD.events.length >= 3) return false;
-  const R = FD.r * (3.8 + Math.random() * 0.6);
+  const R = FD.u * (3.8 + Math.random() * 0.6);
   for (const e of FD.events) {
     if (Math.hypot(e.x - x, e.y - y) < (e.R + R) * 2.2) return false;
   }
@@ -584,8 +537,8 @@ function drawGround(g, e, t) {
   g.clip(e.body);
   g.drawImage(FD.under, 0, 0, FD.w, FD.h);
   g.shadowColor = 'rgba(15,9,3,0.85)';
-  g.shadowBlur = FD.r * 0.9;
-  g.lineWidth = FD.r * 0.5;
+  g.shadowBlur = FD.u * 0.9;
+  g.lineWidth = FD.u * 0.5;
   g.strokeStyle = 'rgba(15,9,3,0.6)';
   g.stroke(e.body);
   g.restore();
@@ -647,7 +600,7 @@ function fieldTick(now) {
 }
 
 function randomClump(byUser) {
-  const wide = FD.w >= 1024;
+  const wide = !stacked.matches;
   for (let i = 0; i < 6; i++) {
     const x = FD.w * (wide ? 0.55 + Math.random() * 0.25 : 0.25 + Math.random() * 0.5);
     const y = FD.h * (wide ? 0.25 + Math.random() * 0.4 : 0.48 + Math.random() * 0.12);
@@ -678,79 +631,77 @@ function fieldLeave() {
 }
 
 /* =========================================================
-   4. EL CAMBIO: una caja de arena donde LOVET se va sumando
-   a su arena actual (gris, angulosa) en tres pasos
+   4. EL CAMBIO: un arenero real donde LOVET se va sumando a
+   su arena de siempre en tres pasos
    ========================================================= */
 const MIX_STEPS = [
-  { share: 0.15, label: 'un poco de LOVET mezclado con su arena habitual' },
-  { share: 0.4, label: 'más LOVET que en el primer paso, mezclado con su arena habitual' },
+  // cada puñado cubre unas tres celdas: con 7% y 22% se ve un poco y casi la mitad
+  { share: 0.07, label: 'un poco de LOVET mezclado con su arena habitual' },
+  { share: 0.22, label: 'más LOVET que en el primer paso, mezclado con su arena habitual' },
   { share: 1, label: 'solo arena LOVET' }
 ];
 const STEP_MS = 4200;
 const mixCanvas = $('#mix-box');
 const stepTabs = $$('.steps [role="tab"]');
-const MX = { g: null, w: 0, h: 0, pad: 0, rocks: [], patches: [], share: 0.15, from: 0.15, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
+const MX = { g: null, w: 0, h: 0, rect: null, flat: null, fg: null, lovet: null, layer: null, lg: null, mask: null, patches: [], share: 0.07, from: 0.07, t0: -1, raf: 0, step: 0, timer: 0, userPicked: false };
+
+// arenero real (foto recortada, con su sombra) con arena comun gris de puntitos,
+// y la mascara de la zona de arena donde se va sumando LOVET
+const TRAY = new Image();
+TRAY.src = asset('assets/arenero.webp');
+const TRAY_SAND = new Image();
+TRAY_SAND.src = asset('assets/arenero-arena.png');
+const trayReady = () => [TRAY, TRAY_SAND].every(img => img.complete && img.naturalWidth > 0);
+// superficie de la arena en la foto, en fracciones del ancho y alto:
+// y del borde de atras y de adelante, y x de sus extremos izquierdo y derecho.
+// Un poco mas grande que la arena real: la mascara recorta el borde exacto
+const TRAY_SURFACE = { y0: 0.18, b0: 0.17, b1: 0.785, y1: 0.61, f0: 0.07, f1: 0.86 };
 
 function setupMixBox() {
   MX.w = mixCanvas.clientWidth;
   MX.h = mixCanvas.clientHeight;
-  if (!MX.w || !MX.h || !sandReady()) return;
+  if (!MX.w || !MX.h || !sandReady() || !trayReady()) return;
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
   MX.g = sizeCanvas(mixCanvas, MX.w, MX.h, 2);
-  MX.pad = Math.min(MX.w, MX.h) * 0.07;
-  const rnd = seeded(77);
-  const x0 = MX.pad, y0 = MX.pad, iw = MX.w - MX.pad * 2, ih = MX.h - MX.pad * 2;
-  // las piedritas miden lo mismo que las perlas de la foto
-  const grainR = SAND_GRAIN_R * Math.max(iw / SAND.naturalWidth, ih / SAND.naturalHeight);
-  const r = grainR * 1.05, stepX = r * 1.65, stepY = r * 1.42;
-  MX.rocks = [];
-  let row = 0;
-  for (let y = y0 - r * 0.5; y < y0 + ih + r; y += stepY, row++) {
-    for (let x = x0 + (row % 2) * stepX / 2 - r * 0.5; x < x0 + iw + r; x += stepX) {
-      MX.rocks.push({
-        x: x + (rnd() - 0.5) * r * 0.7, y: y + (rnd() - 0.5) * r * 0.6,
-        r: r * (0.75 + rnd() * 0.45),
-        s: ROCKS[Math.floor(rnd() * ROCKS.length)]
-      });
-    }
-  }
+  // la foto entra completa en el lienzo (como object-fit: contain)
+  const s = Math.min(MX.w / TRAY.naturalWidth, MX.h / TRAY.naturalHeight);
+  const dw = TRAY.naturalWidth * s, dh = TRAY.naturalHeight * s;
+  MX.rect = { x: (MX.w - dw) / 2, y: (MX.h - dh) / 2, w: dw, h: dh };
+
+  let g;
+  [MX.mask, g] = offscreen(MX.w, MX.h, dpr);
+  g.drawImage(TRAY_SAND, MX.rect.x, MX.rect.y, dw, dh);
+  [MX.layer, MX.lg] = offscreen(MX.w, MX.h, dpr);
+
+  // LOVET se arma visto desde arriba en un lienzo plano y luego se proyecta sobre la arena
+  const S = TRAY_SURFACE;
+  const FW = Math.round((S.f1 - S.f0) * dw), FH = Math.round((S.y1 - S.y0) * dh * 1.3);
+  MX.fw = FW;
+  MX.fh = FH;
+  [MX.lovet, g] = offscreen(FW, FH, dpr);
+  const grainR = SAND.grainR * drawSand(g, 0, 0, FW, FH, false, 1.15);
+  [MX.flat, MX.fg] = offscreen(FW, FH, dpr);
+
   // LOVET entra en puñados: manchas de perlas que crecen y se juntan
-  const cols = 6, cell = iw / cols, rows = Math.ceil(ih / cell);
+  const rnd = seeded(77);
+  const cols = 9, cell = FW / cols, rows = Math.ceil(FH / cell);
   MX.patches = [];
   for (let j = 0; j < rows; j++) {
     for (let i = 0; i < cols; i++) {
-      const cx = x0 + (i + 0.5 + (rnd() - 0.5) * 0.35) * cell;
-      const cy = y0 + (j + 0.5 + (rnd() - 0.5) * 0.35) * (ih / rows);
-      const R = cell * 0.95;
-      // contorno en coordenadas relativas, para poder escalar la mancha al crecer
-      const pts = clusterPoints(0, 0, R, grainR, rnd);
-      MX.patches.push({ x: cx, y: cy, pts, rank: rnd(), delay: rnd() * 0.5 });
+      const cx = (i + 0.5 + (rnd() - 0.5) * 0.35) * cell;
+      const cy = (j + 0.5 + (rnd() - 0.5) * 0.35) * (FH / rows);
+      // contorno relativo al centro, para poder escalar la mancha al crecer
+      // borde irregular de puñado: bultos mas grandes que una perla sola
+      MX.patches.push({ x: cx, y: cy, pts: clusterPoints(0, 0, cell * 0.95, grainR * 3, rnd), rank: rnd(), delay: rnd() * 0.5 });
     }
   }
   drawMix(performance.now());
 }
 
-function drawMix(now) {
-  const g = MX.g;
-  if (!g) return;
-  const { w, h, pad } = MX;
-  g.clearRect(0, 0, w, h);
-  // caja de plastico vista desde arriba
-  const outer = new Path2D();
-  outer.roundRect(0, 0, w, h, Math.min(w, h) * 0.08);
-  const rim = g.createLinearGradient(0, 0, 0, h);
-  rim.addColorStop(0, '#f3f5f2');
-  rim.addColorStop(1, '#cfd6d0');
-  g.fillStyle = rim;
-  g.fill(outer);
-  const inner = new Path2D();
-  inner.roundRect(pad, pad, w - pad * 2, h - pad * 2, Math.min(w, h) * 0.05);
-  g.fillStyle = '#3a3128';
-  g.fill(inner);
-
-  g.save();
-  g.clip(inner);
-  for (const s of MX.rocks) drawSprite(g, s.s, s.x, s.y, s.r);
-
+// manchas de LOVET vistas desde arriba, sobre fondo transparente; devuelve si hay alguna
+function drawFlat(now) {
+  const g = MX.fg, { fw, fh } = MX;
+  g.clearRect(0, 0, fw, fh);
   const k = MX.t0 < 0 ? 1 : clamp01((now - MX.t0) / 1300);
   const lovet = new Path2D();
   let any = false;
@@ -765,25 +716,55 @@ function drawMix(now) {
     any = true;
     lovet.addPath(smoothPath(p.pts.map(([x, y]) => [p.x + x * sc, p.y + y * sc])));
   }
-  if (any) {
-    g.save();
-    g.shadowColor = 'rgba(15,10,5,0.6)';
-    g.shadowBlur = pad * 0.5;
-    g.shadowOffsetY = pad * 0.12;
-    g.fillStyle = '#9a9086';
-    g.fill(lovet);
-    g.restore();
-    g.save();
-    g.clip(lovet);
-    drawSand(g, pad, pad, w - pad * 2, h - pad * 2, false);
-    g.restore();
-  }
-  // sombra interior de las paredes de la caja
-  g.lineWidth = pad * 0.9;
-  g.strokeStyle = 'rgba(20,14,8,0.35)';
-  g.stroke(inner);
+  if (!any) return false;
+  // sombra suave de cada puñado sobre la arena comun
+  g.save();
+  g.shadowColor = 'rgba(20,18,16,0.55)';
+  g.shadowBlur = fw * 0.012;
+  g.shadowOffsetY = fw * 0.004;
+  g.fillStyle = '#b7aea4';
+  g.fill(lovet);
   g.restore();
-  grain(g, w, h, 0.1);
+  g.save();
+  g.clip(lovet);
+  g.drawImage(MX.lovet, 0, 0, fw, fh);
+  g.restore();
+  return true;
+}
+
+function drawMix(now) {
+  const g = MX.g;
+  if (!g) return;
+  const { w, h, rect } = MX;
+  g.clearRect(0, 0, w, h);
+  g.drawImage(TRAY, rect.x, rect.y, rect.w, rect.h);
+  if (!drawFlat(now)) return;
+
+  // proyeccion por franjas: cada franja del lienzo plano ocupa el ancho de la arena a esa profundidad
+  const S = TRAY_SURFACE, lg = MX.lg;
+  const y0 = rect.y + S.y0 * rect.h, y1 = rect.y + S.y1 * rect.h;
+  const strips = Math.ceil(y1 - y0);
+  lg.globalCompositeOperation = 'source-over';
+  lg.clearRect(0, 0, w, h);
+  for (let i = 0; i < strips; i++) {
+    const v = i / strips;
+    const left = rect.x + (S.b0 + (S.f0 - S.b0) * v) * rect.w;
+    const right = rect.x + (S.b1 + (S.f1 - S.b1) * v) * rect.w;
+    lg.drawImage(MX.flat, 0, v * MX.flat.height, MX.flat.width, MX.flat.height / strips, left, y0 + i, right - left, 1.6);
+  }
+  // misma luz que la foto: el fondo de la arena queda bajo la sombra de la pared
+  lg.globalCompositeOperation = 'source-atop';
+  const depth = lg.createLinearGradient(0, y0, 0, y1);
+  depth.addColorStop(0, 'rgba(25,22,20,0.4)');
+  depth.addColorStop(0.3, 'rgba(25,22,20,0.08)');
+  depth.addColorStop(1, 'rgba(25,22,20,0)');
+  lg.fillStyle = depth;
+  lg.fillRect(0, 0, w, h);
+  // solo dentro de la arena del arenero
+  lg.globalCompositeOperation = 'destination-in';
+  lg.drawImage(MX.mask, 0, 0, w, h);
+  lg.globalCompositeOperation = 'source-over';
+  g.drawImage(MX.layer, 0, 0, w, h);
 }
 
 function mixTick(now) {
@@ -887,7 +868,7 @@ const STORES = [
   ['SPAR Exclub', 'spar-exclub', 'Supermercado', 'San Miguel', 'Av. La Marina cdra. 20', 0.001, 0.002],
   ['Super Grup', 'super-grup', 'Supermercado', 'La Molina', 'Av. La Molina cdra. 12', 0, 0]
 ].map(([name, logo, type, district, addr, dLat, dLng], id) => ({
-  id, name, logo: `assets/logos/${logo}.png`, type, district, addr,
+  id, name, logo: asset(`assets/logos/${logo}.png`), type, district, addr,
   lat: DISTRICTS[district][0] + dLat,
   lng: DISTRICTS[district][1] + dLng
 }));
@@ -991,7 +972,7 @@ function selectStore(id, fly) {
   map.setLayoutProperty('store-points', 'icon-image', ['case', ['==', ['get', 'id'], id], 'lovet-pin-on', 'lovet-pin']);
   map.setLayoutProperty('store-points', 'symbol-sort-key', ['case', ['==', ['get', 'id'], id], 1, 0]);
   if (fly) {
-    const wide = window.innerWidth >= 1024;
+    const wide = !stacked.matches;
     map.flyTo({ center: [s.lng, s.lat], zoom: Math.max(map.getZoom(), 14.2), offset: wide ? [200, 0] : [0, 0], duration: reduceMotion ? 0 : 900 });
   }
   if (popup) popup.remove();
@@ -1113,7 +1094,7 @@ function fitStores(list, animate) {
   if (!list.length) return;
   const bounds = new maplibregl.LngLatBounds();
   list.forEach(s => bounds.extend([s.lng, s.lat]));
-  const wide = window.innerWidth >= 1024;
+  const wide = !stacked.matches;
   const padding = wide
     ? { top: 110, bottom: 50, left: Math.min(520, window.innerWidth * 0.4), right: 190 }
     : { top: 70, bottom: 50, left: 30, right: 30 };
@@ -1479,7 +1460,7 @@ window.addEventListener('load', () => {
   chooseMode();
   setupAll();
 });
-SAND.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); });
+[SAND, SAND_BAG, TRAY, TRAY_SAND].forEach(img => img.addEventListener('load', () => { if (document.readyState === 'complete') setupAll(); }));
 
 let resizeTimer;
 window.addEventListener('resize', () => {

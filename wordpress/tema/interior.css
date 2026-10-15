@@ -1,0 +1,13 @@
+/* ---------- WordPress: paginas que no son la portada ---------- */
+.lovet-interior .topbar { position: sticky; top: 0; background: var(--aloe); color: var(--amarillo); }
+.lovet-interior .topbar__cta:hover { background: var(--amarillo); color: var(--aloe); }
+.lovet-interior__main { max-width: 780px; margin: 0 auto; padding: 48px var(--gutter-base) 72px; }
+.lovet-interior__entry + .lovet-interior__entry { margin-top: 64px; }
+.lovet-interior__entry .display { color: var(--amarillo); font-size: clamp(2.4rem, 5vw, 4rem); margin-bottom: 28px; }
+.lovet-interior__content { color: rgba(255, 255, 255, .9); }
+.lovet-interior__content > * + * { margin-top: 1em; }
+.lovet-interior__content h2, .lovet-interior__content h3 { color: var(--amarillo); line-height: 1.15; margin-top: 1.6em; }
+.lovet-interior__content a { color: var(--amarillo); }
+.lovet-interior__content ul, .lovet-interior__content ol { padding-left: 1.4em; list-style: revert; }
+.lovet-interior__content img { height: auto; border-radius: 14px; }
+.lovet-interior__footer { max-width: 780px; margin: 0 auto; padding-left: var(--gutter-base); padding-right: var(--gutter-base); }

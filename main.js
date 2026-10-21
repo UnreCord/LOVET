@@ -136,7 +136,7 @@ function setupBag() {
   B.w = bag.offsetWidth;
   B.h = bag.offsetHeight;
   if (!B.w || !B.h || !sandReady() || !bagImg.complete) return;
-  B.R = Math.min(115, B.w * 0.29);
+  B.R = Math.min(150, B.w * 0.29);
   const g = sizeCanvas(bagCanvas, B.w, B.h, 2);
   g.fillStyle = '#0f2a24';
   g.fillRect(0, 0, B.w, B.h);

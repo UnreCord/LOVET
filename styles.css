@@ -209,7 +209,7 @@ html.pager .page.is-leaving::after { opacity: .55; }
   --x: 50%; --y: 62%; --r: 0px;
   position: relative; z-index: 1;
   justify-self: center;
-  height: min(70svh, 700px);
+  height: min(calc(100svh - var(--top) - 56px), 860px);
   aspect-ratio: 467 / 683;
   user-select: none;
   touch-action: none;
@@ -294,27 +294,27 @@ html.pager .field-ui { overflow: hidden; }
 .field-ui__copy p { margin: 24px 0 28px; color: rgba(255, 255, 255, .88); }
 .field-ui__bottom { pointer-events: auto; }
 /* beneficios: los mismos iconos amarillos de la bolsa */
-.perks { display: grid; grid-template-columns: repeat(3, max-content); gap: 14px 36px; }
-.perks li { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 1rem; color: var(--blanco); }
-.perks svg { flex: none; width: 26px; height: 26px; fill: var(--amarillo); color: var(--amarillo); }
-.facts { display: grid; grid-template-columns: repeat(3, minmax(0, 260px)); gap: 32px; margin-top: 26px; }
-.facts li { border-top: 2px solid var(--amarillo); padding-top: 14px; }
-.facts h3 { font-size: 1.15rem; font-weight: 700; color: var(--amarillo); }
-.facts p { margin-top: 4px; font-size: .95rem; color: rgba(255, 255, 255, .82); }
+.perks { display: grid; grid-template-columns: repeat(3, max-content); gap: 22px 48px; }
+.perks li { display: flex; align-items: center; gap: 14px; font-weight: 700; font-size: clamp(1.1rem, 1.5vw, 1.4rem); color: var(--blanco); }
+.perks svg { flex: none; width: clamp(32px, 2.8vw, 42px); height: clamp(32px, 2.8vw, 42px); fill: var(--amarillo); color: var(--amarillo); }
 
 /* ---------- 4. el cambio ---------- */
+/* izquierda: texto y pasos arriba, el arenero debajo con el alto que queda;
+   derecha: las tres presentaciones de la bolsa */
 .switch {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-  align-items: center; align-content: safe center;
-  gap: clamp(32px, 5vw, 88px);
-  padding: var(--top) calc(var(--gutter) + var(--rail-space)) 36px var(--gutter);
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-areas: "text bags" "box bags";
+  column-gap: clamp(32px, 5vw, 88px); row-gap: 20px;
+  padding: var(--top) calc(var(--gutter) + var(--rail-space)) 28px var(--gutter);
 }
-.switch .display { color: var(--amarillo); max-width: 12ch; font-size: clamp(2.6rem, 4.8vw, 5rem); }
+.switch__text { grid-area: text; }
+.switch .display { color: var(--amarillo); max-width: 12ch; font-size: clamp(2.4rem, 4.2vw, 4.4rem); }
 .switch__intro { margin-top: 16px; max-width: 44ch; color: rgba(255, 255, 255, .88); }
 .steps {
   display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;
-  margin-top: 26px;
+  margin-top: 22px;
 }
 .steps button {
   position: relative; overflow: hidden;
@@ -336,10 +336,17 @@ html.pager .field-ui { overflow: hidden; }
 }
 .steps.is-playing button[aria-selected="true"]::after { animation: stepTimer 4.2s linear forwards; }
 @keyframes stepTimer { to { transform: scaleX(1); } }
-.switch__after { margin-top: 22px; font-weight: 700; font-size: 1.15rem; color: var(--blanco); }
+.switch__after { margin-top: 16px; font-weight: 700; font-size: 1.15rem; color: var(--blanco); }
 
-.switch__box #mix-box { display: block; width: 100%; aspect-ratio: 1105 / 635; }
-.switch__note { margin-top: 10px; font-size: .82rem; font-style: italic; color: rgba(255, 255, 255, .7); }
+.switch__box { grid-area: box; min-height: 190px; container-type: size; }
+/* el arenero entra entero en el espacio que queda: lo limita el ancho o el alto, lo que llegue primero */
+.switch__box #mix-box {
+  display: block; aspect-ratio: 1105 / 635;
+  width: min(100cqw, (100cqh - 30px) * 1105 / 635);
+}
+.switch__note { margin-top: 8px; font-size: .82rem; font-style: italic; color: rgba(255, 255, 255, .7); }
+.switch__bags { grid-area: bags; align-self: center; }
+.switch__bags img { width: 100%; height: auto; filter: drop-shadow(0 22px 26px rgba(0, 20, 17, .45)); }
 
 /* ---------- 5. donde comprar ---------- */
 .map { position: absolute; inset: 0; background: var(--bruma); }
@@ -493,8 +500,9 @@ html.pager .stores-wrap { overflow: hidden; }
 
 /* ---------- pantallas horizontales con poca altura (laptops, zoom del navegador) ---------- */
 @media (min-width: 640px) and (max-height: 820px) and (orientation: landscape) {
-  .switch .display { font-size: clamp(2.2rem, 4.2vw, 4.2rem); }
-  .switch__intro { font-size: .95rem; }
+  .switch .display { font-size: clamp(2.1rem, 3.6vw, 3.6rem); }
+  .switch__intro { font-size: .92rem; margin-top: 10px; }
+  .switch__after { margin-top: 12px; font-size: 1rem; }
   .steps { margin-top: 16px; }
   .steps button { padding: 12px 14px 16px; }
   .steps__text { font-size: .84rem; }
@@ -502,6 +510,17 @@ html.pager .stores-wrap { overflow: hidden; }
   .family__title { font-size: clamp(2.8rem, 5.5vw, 5.5rem); }
   .family__lead { margin: 22px 0 12px; }
   .naming { margin-top: 24px; padding-top: 18px; }
+}
+
+/* pantallas horizontales muy bajas (zoom al 150% en una laptop): pasos compactos para que entre el arenero */
+@media (min-width: 640px) and (max-height: 680px) and (orientation: landscape) {
+  .switch .display { max-width: none; font-size: clamp(2rem, 3.4vw, 3rem); }
+  .switch__intro { font-size: .88rem; line-height: 1.45; }
+  .steps { margin-top: 12px; }
+  .steps button { padding: 10px 12px 14px; }
+  .steps__text { display: none; }
+  .switch__after { margin-top: 10px; font-size: .95rem; }
+  .switch { row-gap: 12px; }
 }
 
 /* ---------- sin menu lateral: el contenido usa todo el ancho y arriba hay una barra de avance ---------- */
@@ -519,13 +538,16 @@ html.pager .stores-wrap { overflow: hidden; }
    (las pantallas horizontales bajas, como una laptop con zoom, siguen en dos columnas) */
 @media (max-width: 1023px) and (orientation: portrait), (max-width: 639px) {
   .hero { grid-template-columns: 1fr; align-content: start; justify-items: start; }
-  .bag { height: min(40svh, 420px); margin: 28px auto 0; }
+  .bag { height: min(46svh, 520px); margin: 28px auto 0; }
 
   .family { grid-template-columns: 1fr; grid-template-rows: 36svh auto; }
   .family__photo { min-height: 0; }
   .family__text { padding: 36px var(--gutter) 40px; }
 
-  .switch { grid-template-columns: 1fr; align-content: start; gap: 24px; }
+  .switch { grid-template-columns: 1fr; grid-template-rows: repeat(3, auto); grid-template-areas: "text" "box" "bags"; align-content: start; gap: 24px; }
+  .switch__box { min-height: auto; container-type: normal; }
+  .switch__box #mix-box { width: 100%; }
+  .switch__bags { justify-self: center; width: min(100%, 420px); }
 
   .field-ui {
     background:
@@ -543,6 +565,17 @@ html.pager .stores-wrap { overflow: hidden; }
   .contact__box { margin-top: 24px; }
 }
 
+/* tablet en vertical: el arenero y las bolsas lado a lado, debajo de los pasos */
+@media (min-width: 640px) and (max-width: 1023px) and (orientation: portrait) {
+  .switch { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; grid-template-areas: "text text" "box bags"; align-items: center; }
+  .switch__bags { width: 100%; }
+}
+
+/* los seis beneficios en dos columnas cuando no entran en tres (zoom grande, pantallas angostas) */
+@media (max-width: 1099px) {
+  .perks { grid-template-columns: repeat(2, max-content); }
+}
+
 /* ---------- movil ---------- */
 @media (max-width: 639px) {
   body { font-size: 1rem; }
@@ -555,20 +588,16 @@ html.pager .stores-wrap { overflow: hidden; }
   .hero__actions { margin-top: 20px; }
   .hero__actions .btn { min-height: 44px; padding: 0 18px; font-size: .95rem; }
   .peek-btn { margin-top: 10px; }
-  .bag { height: min(40svh, 360px); margin-top: 20px; }
+  .bag { height: clamp(250px, calc(100svh - 480px), 420px); margin-top: 20px; }
 
   .family { grid-template-rows: 30svh auto; }
   .family__text { padding-top: 30px; padding-bottom: 24px; }
   .family__lead { margin: 16px 0 10px; }
   .naming { gap: 20px; margin-top: 20px; padding-top: 16px; }
 
-  .perks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
-  .perks li { gap: 8px; font-size: .84rem; line-height: 1.2; }
-  .perks svg { width: 20px; height: 20px; }
-  .facts { gap: 12px; margin-top: 14px; }
-  .facts li { padding-top: 8px; }
-  .facts h3 { font-size: .86rem; line-height: 1.2; }
-  .facts p { font-size: .74rem; line-height: 1.35; }
+  .perks { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 14px; }
+  .perks li { gap: 10px; font-size: .98rem; line-height: 1.2; }
+  .perks svg { width: 28px; height: 28px; }
 
   .switch { gap: 18px; padding-bottom: 20px; }
   .switch .display { font-size: 2.3rem; }
@@ -579,6 +608,7 @@ html.pager .stores-wrap { overflow: hidden; }
   .steps__title { font-size: .86rem; line-height: 1.25; }
   .steps__text { font-size: .74rem; line-height: 1.35; }
   .switch__after { margin-top: 14px; font-size: 1rem; }
+  .switch__bags { width: 86%; }
   .switch__note { margin-top: 6px; }
 
   .map { height: 42svh; }
@@ -604,7 +634,7 @@ html.pager .stores-wrap { overflow: hidden; }
   :root { --top: 64px; }
   .display { font-size: 2.15rem; }
   .switch .display { font-size: 2rem; }
-  .bag { height: 34svh; }
+  .bag { height: clamp(220px, calc(100svh - 420px), 300px); }
   .hero__lead, .hero__text { font-size: .92rem; }
   .switch__intro { display: none; }
 }

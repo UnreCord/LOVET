@@ -48,9 +48,9 @@ def portada(html):
     for etiqueta in [
         '  <link rel="icon" href="assets/logo-lovet.png">\n',
         '  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&family=Instrument+Serif&display=swap" rel="stylesheet">\n',
-        '  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">\n',
+        '  <link rel="stylesheet" href="assets/vendor/maplibre/maplibre-gl.css">\n',
         '  <link rel="stylesheet" href="styles.css">\n',
-        '  <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js" defer></script>\n',
+        '  <script src="assets/vendor/maplibre/maplibre-gl.js" defer></script>\n',
         '  <script src="main.js"></script>\n',
     ]:
         html = reemplazar(html, etiqueta, '')

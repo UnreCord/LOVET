@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LOVET_VERSION', '1.1.0' );
+define( 'LOVET_VERSION', '1.2.0' );
 
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'automatic-feed-links' );
@@ -22,15 +22,18 @@ add_action( 'wp_enqueue_scripts', function () {
 		array(),
 		null
 	);
-	wp_enqueue_style( 'lovet', get_stylesheet_uri(), array( 'lovet-fuentes' ), LOVET_VERSION );
+	$estilos_lovet = array( 'lovet-fuentes' );
+	if ( is_front_page() ) {
+		// mapa de puntos de venta: MapLibre va dentro del tema y su hoja se carga antes que la de LOVET
+		wp_enqueue_style( 'maplibre', get_theme_file_uri( 'assets/vendor/maplibre/maplibre-gl.css' ), array(), '4.7.1' );
+		wp_enqueue_script( 'maplibre', get_theme_file_uri( 'assets/vendor/maplibre/maplibre-gl.js' ), array(), '4.7.1', array( 'strategy' => 'defer' ) );
+		$estilos_lovet[] = 'maplibre';
+	}
+	wp_enqueue_style( 'lovet', get_stylesheet_uri(), $estilos_lovet, LOVET_VERSION );
 
 	if ( ! is_front_page() ) {
 		return;
 	}
-
-	// mapa de puntos de venta
-	wp_enqueue_style( 'maplibre', 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css', array(), null );
-	wp_enqueue_script( 'maplibre', 'https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js', array(), null, array( 'strategy' => 'defer' ) );
 
 	wp_enqueue_script( 'lovet', get_theme_file_uri( 'main.js' ), array(), LOVET_VERSION, true );
 	// main.js busca sus imagenes en la carpeta del tema

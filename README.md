@@ -4,7 +4,7 @@ Página informativa de LOVET Super Premium, arena perlada aglomerante con aroma 
 
 ## Cómo verla
 
-La web carga el mapa y las fuentes desde internet, así que conviene abrirla con un servidor local
+La web carga las fuentes y el mapa base (openfreemap.org) desde internet, así que conviene abrirla con un servidor local
 (no con doble clic). Por ejemplo, desde esta carpeta:
 
 ```bash
@@ -20,6 +20,7 @@ Luego abre la dirección que muestra la terminal. `LOVET.html` e `index.html` so
 - `styles.css`: colores y tipografía de la marca, diseño de cada sección.
 - `main.js`: navegación por secciones, vistazo dentro de la bolsa, arena interactiva con la pala,
   pasos del cambio de arena, mapa y formulario.
+- `assets/vendor/maplibre/`: la librería del mapa (MapLibre GL 4.7.1, licencia BSD) incluida en el proyecto, sin depender de unpkg.
 - `assets/`: bolsa final de 10 kg, texturas de la arena LOVET (`arena-lovet-bolsa.jpg` dentro de la bolsa;
   `arena-lovet.jpg` en "Toca la arena" y en el arenero de "El cambio"), foto del arenero con arena común
   (`arenero.webp`, recortada con su sombra) y la máscara de su zona de arena (`arenero-arena.png`), fotos de las secciones, logos de LOVET y de los distribuidores de ejemplo.
@@ -66,4 +67,3 @@ https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.co
 - Reemplazar las tiendas del mapa (son datos de ejemplo) por los distribuidores reales, en `STORES` dentro de `main.js`.
 - El formulario de contacto no tiene servidor: al enviarlo abre el correo del visitante con el mensaje
   listo para marketingpets@solvet.com.pe. Si se quiere envío directo, conectarlo a un servicio (Formspree, CRM...).
-- Si hay archivos de la bolsa en mayor resolución que el PDF de presentaciones, reemplazar `assets/bolsa-10kg.png`.

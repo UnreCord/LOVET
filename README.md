@@ -64,14 +64,14 @@ https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.co
 
 ## Pendiente antes de publicar
 
-- Logo de Brisa Pet Shop: por ahora sale con sus iniciales. Guardarlo como `assets/logos/brisa.webp` y poner
-  `'brisa'` en su fila de `STORES` (`main.js`).
+- Veterinaria San Felipe en Los Olivos ("Asentamiento San Martín") no tiene número de puerta: sale en la lista con
+  "Cómo llegar", sin pin. T&M Pet Style tiene 2 locales más sin dirección en la lista de distribución.
 
 ## Tiendas del mapa
 
-Las tiendas están en `STORES` dentro de `main.js`: nombre, logo, tipo, distrito, dirección, latitud, longitud y una nota
-opcional (por ejemplo, otros locales). Una fila sin latitud ni longitud es una tienda solo online: sale en la lista,
-sin pin. Las coordenadas se ubicaron por número de puerta con OpenStreetMap; "Cómo llegar" abre Google Maps con el
+Los puntos de venta están en `STORES` dentro de `main.js`, uno por local: nombre comercial, logo, distrito, dirección,
+latitud, longitud y si también vende online. Una fila sin dirección es una tienda solo online (sale en la lista, sin
+pin); una con dirección pero sin coordenadas sale en la lista con "Cómo llegar", sin pin. Las coordenadas se ubicaron por número de puerta con OpenStreetMap; "Cómo llegar" abre Google Maps con el
 nombre y la dirección, así que lleva a la tienda aunque el pin quede a unas casas.
 - El formulario de contacto no tiene servidor: al enviarlo abre el correo del visitante con el mensaje
   listo para marketingpets@solvet.com.pe. Si se quiere envío directo, conectarlo a un servicio (Formspree, CRM...).

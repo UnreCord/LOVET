@@ -812,33 +812,41 @@ stepTabs.forEach((tab, i) => {
 /* =========================================================
    5. DONDE COMPRAR: mapa con los puntos de venta
    ========================================================= */
-// clientes de LOVET (lista de clientes de Solpet). Coordenadas ubicadas por número de puerta con OpenStreetMap;
-// "Cómo llegar" abre Google Maps con el nombre y la dirección.
-// [nombre, logo, tipo, distrito, dirección, lat, lng, nota]; sin lat/lng = tienda solo online
+// puntos de venta de LOVET (lista de distribución de Solpet). Coordenadas ubicadas por número de puerta con
+// OpenStreetMap; "Cómo llegar" abre Google Maps con el nombre y la dirección.
+// [nombre comercial, logo, distrito, dirección, lat, lng, vende online]; sin dirección = tienda solo online;
+// sin coordenadas = local sin número de puerta: sale en la lista con "Cómo llegar", sin pin
+const WEB = true;
 const STORES = [
-  ['Miushop', 'miushop', 'Pet shop', 'Santiago de Surco', 'Av. Caminos del Inca 1685', -12.12695, -76.98174],
-  ['Wasi Pet', 'wasi-pet', 'Veterinaria y pet shop', 'San Miguel', 'Av. Brígida Silva de Ochoa 210', -12.08218, -77.08886],
-  ['Royal Pet', 'royal-pet', 'Pet shop', 'Lince', 'Jr. General Trinidad Morán 417', -12.08950, -77.03665],
-  ['Brisa Pet Shop', null, 'Pet shop', 'Magdalena del Mar', 'Av. Javier Prado Oeste 205', -12.09079, -77.06533, '2 locales'],
-  ['Mundo Pet', 'mundo-pet', 'Pet shop', 'Magdalena del Mar', 'Jr. Mariscal Ramón Castilla 778', -12.08978, -77.07317],
-  ['Veterinaria San Felipe', 'san-felipe', 'Veterinaria', 'San Miguel', 'Av. Los Precursores 538', -12.06954, -77.09375, 'También en Jesús María y Los Olivos'],
-  ['Gatuario', 'gatuario', 'Pet shop', 'Santiago de Surco', 'Av. Paseo de la Castellana 195', -12.13057, -77.00177, 'También en San Isidro'],
-  ['+Kotas', 'mas-kotas', 'Pet shop', 'Breña', 'Jr. Carhuaz 514', -12.05383, -77.04809],
-  ['100% Miau Gatos', '100-miau-gatos', 'Tienda para gatos', 'Miraflores', 'Calle José Toribio Polo 511', -12.11238, -77.04630],
-  ['Top Can', 'top-can', 'Pet shop', 'La Victoria', 'Jr. Huánuco 2194', -12.07110, -77.01444],
-  ['Neko Home', 'neko-home', 'Pet shop', 'Santiago de Surco', 'Av. Morro Solar 1252', -12.13020, -76.97720],
-  ['Monivet Center', 'monivet', 'Veterinaria', 'Santiago de Surco', 'Calle Loma Ponciana 164', -12.13472, -76.98624],
-  ['T&M Pet Style', 'tm-petshop', 'Pet shop', 'Lince', 'Av. Coronel José Leal 210', -12.08390, -77.03650, 'También en La Victoria y Magdalena'],
-  ['Mr. Pet', 'mr-pet', 'Veterinaria y pet shop', 'La Molina', 'Calle Samoa 336', -12.08304, -76.89805],
-  ["Pet's Canadá", 'pets-canada', 'Veterinaria y pet shop', 'La Victoria', 'Av. Canadá 1539', -12.08427, -77.00696],
-  ['Patmo Pet', 'patmo', 'Tienda online', 'Tiendas online', 'Venta online con delivery en Lima'],
-  ['Animalia Store', 'animalia', 'Tienda online', 'Tiendas online', 'Venta online con delivery en Lima']
-].map(([name, logo, type, district, addr, lat, lng, note], id) => ({
-  id, name, logo: logo && asset(`assets/logos/${logo}.webp`), type, district, addr, note,
-  online: lat === undefined, lat, lng
+  ['Miushop', 'miushop', 'Santiago de Surco', 'Av. Caminos del Inca 1685', -12.12695, -76.98174, WEB],
+  ['Wasi Pet', 'wasi-pet', 'San Miguel', 'Av. Brígida Silva de Ochoa 210', -12.08218, -77.08886],
+  ['Royal Pet', 'royal-pet', 'Lince', 'Av. General Trinidad Morán 417', -12.08950, -77.03665],
+  ['Brisa Petshop', 'brisa', 'Magdalena del Mar', 'Av. Javier Prado Oeste 205', -12.09079, -77.06533, WEB],
+  ['Brisa Petshop', 'brisa', 'Santiago de Surco', 'Av. Caminos del Inca 848', -12.11917, -76.98852, WEB],
+  ['Mundo Pet', 'mundo-pet', 'Magdalena del Mar', 'Jr. Castilla 778', -12.08978, -77.07317],
+  ['Veterinaria San Felipe / Peluvet', 'san-felipe', 'Jesús María', 'Av. Faustino Sánchez Carrión 1051', -12.09124, -77.05579, WEB],
+  ['Veterinaria San Felipe / Peluvet', 'san-felipe', 'San Miguel', 'Av. De Los Precursores 538', -12.06954, -77.09375, WEB],
+  ['Veterinaria San Felipe / Peluvet', 'san-felipe', 'San Miguel', 'Av. Lima 679', -12.08855, -77.08064, WEB],
+  ['Veterinaria San Felipe / Peluvet', 'san-felipe', 'Los Olivos', 'Asentamiento San Martín', undefined, undefined, WEB],
+  ['Gatuario', 'gatuario', 'San Isidro', 'Calle Baltazar La Torre 1115', -12.10465, -77.05787, WEB],
+  ['Gatuario', 'gatuario', 'Santiago de Surco', 'Av. Paseo La Castellana 191', -12.13051, -77.00176, WEB],
+  ['+Kotas', 'mas-kotas', 'Breña', 'Jr. Carhuaz 514', -12.05383, -77.04809],
+  ['Miau 100% Gatos', '100-miau-gatos', 'Miraflores', 'Calle José Toribio Polo 511', -12.11238, -77.04630, WEB],
+  ['Top Can', 'top-can', 'La Victoria', 'Jr. Agustín Gamarra 1133', -12.06986, -77.01266],
+  ['Nekohome', 'neko-home', 'Santiago de Surco', 'Jr. Morro Solar 1252', -12.13020, -76.97720],
+  ['Monivet', 'monivet', 'Santiago de Surco', 'Calle Loma Ponciana 164', -12.13472, -76.98624, WEB],
+  ['T&M Pet Style', 'tm-petshop', 'Lince', 'Av. Coronel José Leal 210', -12.08390, -77.03650, WEB],
+  ['T&M Pet Style', 'tm-petshop', 'Santiago de Surco', 'Calle Las Retamas 100', -12.15087, -77.00782, WEB],
+  ['Mr. Pet', 'mr-pet', 'La Molina', 'Calle Samoa 328', -12.08304, -76.89805],
+  ['Pets Canada', 'pets-canada', 'La Victoria', 'Av. Canadá 1537', -12.08430, -77.00703],
+  ['Patmo', 'patmo', 'Tiendas online'],
+  ['Animalia Petstore', 'animalia', 'Tiendas online']
+].map(([name, logo, district, addr, lat, lng, web], id) => ({
+  id, name, logo: logo && asset(`assets/logos/${logo}.webp`), district, online: !addr,
+  addr: addr || 'Venta online con delivery', web: !!web, lat, lng
 }));
 const ONLINE = 'Tiendas online';
-const onMap = list => list.filter(s => !s.online);
+const onMap = list => list.filter(s => s.lat !== undefined);
 
 const storeList = $('#store-list');
 const storeCount = $('#store-count');
@@ -859,8 +867,8 @@ const distanceText = km => (km < 1 ? `a ${Math.round(km * 100) * 10} m` : `a ${d
 
 function visibleStores() {
   const q = normalize(storeQuery.value);
-  let list = STORES.filter(s => !q || normalize(`${s.name} ${s.district} ${s.addr} ${s.type} ${s.note || ''}`).includes(q));
-  if (userPos) list = list.map(s => (s.online ? s : { ...s, km: distanceKm(userPos, s) })).sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9));
+  let list = STORES.filter(s => !q || normalize(`${s.name} ${s.district} ${s.addr}${s.web || s.online ? ' online' : ''}`).includes(q));
+  if (userPos) list = list.map(s => (s.lat === undefined ? s : { ...s, km: distanceKm(userPos, s) })).sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9));
   return list;
 }
 
@@ -878,7 +886,7 @@ function renderStores() {
   if (!userPos) districts.sort((a, b) => a.localeCompare(b, 'es'));
   // las tiendas online van al final de la lista
   if (districts.includes(ONLINE)) districts.push(districts.splice(districts.indexOf(ONLINE), 1)[0]);
-  const shops = onMap(list), online = list.length - shops.length;
+  const shops = list.filter(s => !s.online), online = list.length - shops.length;
   const shopDistricts = new Set(shops.map(s => s.district)).size;
   storeCount.textContent = list.length
     ? [
@@ -903,7 +911,7 @@ function renderStores() {
       pick.type = 'button';
       pick.appendChild(el('span', 'store__name', s.name));
       pick.appendChild(el('span', 'store__addr', s.addr));
-      if (s.note) pick.appendChild(el('span', 'store__note', s.note));
+      if (s.web) pick.appendChild(el('span', 'store__note', 'También vende online'));
       if (s.km !== undefined) pick.appendChild(el('span', 'store__dist', distanceText(s.km)));
       row.append(storeLogo(s), pick);
       if (s.online) {
@@ -916,10 +924,15 @@ function renderStores() {
         go.rel = 'noopener';
         go.setAttribute('aria-label', `Cómo llegar a ${s.name}, ${s.addr}`);
         row.append(go);
-        row.addEventListener('click', e => {
-          if (e.target.closest('a')) return;
-          selectStore(s.id, true);
-        });
+        if (s.lat === undefined) {
+          row.classList.add('store--nopin');
+          pick.disabled = true;
+        } else {
+          row.addEventListener('click', e => {
+            if (e.target.closest('a')) return;
+            selectStore(s.id, true);
+          });
+        }
       }
       storeList.appendChild(row);
     });
@@ -973,7 +986,7 @@ function selectStore(id, fly) {
   go.href = directionsUrl(s);
   go.target = '_blank';
   go.rel = 'noopener';
-  box.append(storeLogo(s), el('strong', '', s.name), el('span', '', `${s.type}. ${s.addr}, ${s.district}.${s.note ? ` ${s.note}.` : ''}`), go);
+  box.append(storeLogo(s), el('strong', '', s.name), el('span', '', `${s.addr}, ${s.district}.${s.web ? ' También vende online.' : ''}`), go);
   popup = new maplibregl.Popup({ offset: [0, -40], maxWidth: '260px', focusAfterOpen: false })
     .setLngLat([s.lng, s.lat]).setDOMContent(box).addTo(map);
 }
@@ -1034,6 +1047,10 @@ function brandMap() {
       } else if (l.type === 'symbol' && l.layout && l.layout['text-field']) {
         map.setPaintProperty(id, 'text-color', sl === 'place' ? '#00433c' : '#6b6f66');
         map.setPaintProperty(id, 'text-halo-color', '#eef1ec');
+        // nombres en español (el estilo base prefiere el nombre en inglés: "West Javier Prado Avenue")
+        if (JSON.stringify(l.layout['text-field']).includes('name_en')) {
+          map.setLayoutProperty(id, 'text-field', ['coalesce', ['get', 'name:es'], ['get', 'name'], ['get', 'name_en']]);
+        }
       }
     } catch (err) { /* capa sin esa propiedad */ }
   }

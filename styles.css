@@ -413,9 +413,9 @@ html.pager .stores-wrap { overflow: hidden; }
 }
 .store__logo img { width: 100%; height: 100%; object-fit: cover; }
 .store__logo--initials { background: var(--aloe); border-color: var(--aloe); color: var(--amarillo); font-weight: 800; font-size: 1.05rem; letter-spacing: .02em; }
-.store--online { cursor: default; }
-.store--online:hover { background: none; }
-.store--online .store__pick { cursor: default; color: inherit; }
+.store--online, .store--nopin { cursor: default; }
+.store--online:hover, .store--nopin:hover { background: none; }
+.store--online .store__pick, .store--nopin .store__pick { cursor: default; color: inherit; }
 .store__note { display: block; font-size: .78rem; line-height: 1.3; color: var(--aloe); }
 .store__name { display: block; font-weight: 700; color: var(--aloe); line-height: 1.2; }
 .store__addr { display: block; font-size: .82rem; line-height: 1.3; }

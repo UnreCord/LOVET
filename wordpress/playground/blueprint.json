@@ -1,0 +1,36 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "meta": {
+    "title": "LOVET en WordPress",
+    "description": "WordPress con el tema de LOVET instalado y activado: la portada es la página de LOVET.",
+    "author": "LOVET"
+  },
+  "landingPage": "/",
+  "preferredVersions": {
+    "php": "8.3",
+    "wp": "latest"
+  },
+  "features": {
+    "networking": true
+  },
+  "login": true,
+  "steps": [
+    {
+      "step": "installTheme",
+      "themeData": {
+        "resource": "url",
+        "url": "https://raw.githubusercontent.com/UnreCord/LOVET/main/wordpress/playground/lovet.zip"
+      },
+      "options": {
+        "activate": true
+      }
+    },
+    {
+      "step": "setSiteOptions",
+      "options": {
+        "blogname": "LOVET",
+        "blogdescription": "Arena perlada super premium con aroma a aloe vera"
+      }
+    }
+  ]
+}

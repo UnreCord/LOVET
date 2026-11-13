@@ -48,6 +48,19 @@ de `wordpress/tema/functions.php`.
 - En `wordpress/tema/` está solo lo propio de WordPress: `functions.php` (carga estilos, script e imágenes desde el
   tema), `index.php` (páginas que no son la portada), `interior.css` y la miniatura del tema.
 
+## Demo en WordPress Playground (gratis, para compartir)
+
+Este enlace abre un WordPress completo en el navegador, con el tema de LOVET ya instalado y activado. No necesita
+hosting, cuenta ni pago, y se puede enviar a cualquier persona:
+
+https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.com/UnreCord/LOVET/main/wordpress/playground/blueprint.json
+
+- La primera carga tarda unos segundos: arma el WordPress dentro del navegador.
+- Cada persona recibe su propia copia; lo que cambie en el panel no se guarda ni le afecta a nadie más.
+- Para ver el panel de administración, agrega `/wp-admin/` a la dirección (la sesión ya entra como administrador).
+- El enlace instala `wordpress/playground/lovet.zip` de la rama `main`. Después de cambiar la página, corre
+  `python3 wordpress/construir-tema.py` (actualiza esa copia), haz commit y fusiona en `main`: el enlace no cambia.
+
 ## Pendiente antes de publicar
 
 - Reemplazar las tiendas del mapa (son datos de ejemplo) por los distribuidores reales, en `STORES` dentro de `main.js`.

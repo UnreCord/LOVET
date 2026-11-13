@@ -23,7 +23,7 @@ Luego abre la dirección que muestra la terminal. `LOVET.html` e `index.html` so
 - `assets/vendor/maplibre/`: la librería del mapa (MapLibre GL 4.7.1, licencia BSD) incluida en el proyecto, sin depender de unpkg.
 - `assets/`: bolsa final de 10 kg, texturas de la arena LOVET (`arena-lovet-bolsa.jpg` dentro de la bolsa;
   `arena-lovet.jpg` en "Toca la arena" y en el arenero de "El cambio"), foto del arenero con arena común
-  (`arenero.webp`, recortada con su sombra) y la máscara de su zona de arena (`arenero-arena.png`), fotos de las secciones, logos de LOVET y de los distribuidores de ejemplo.
+  (`arenero.webp`, recortada con su sombra) y la máscara de su zona de arena (`arenero-arena.png`), fotos de las secciones, logos de LOVET y de las tiendas del mapa (`assets/logos/`, cuadrados de 200 px en WebP).
 
 ## WordPress
 
@@ -64,6 +64,14 @@ https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.co
 
 ## Pendiente antes de publicar
 
-- Reemplazar las tiendas del mapa (son datos de ejemplo) por los distribuidores reales, en `STORES` dentro de `main.js`.
+- Veterinaria San Felipe en Los Olivos ("Asentamiento San Martín") no tiene número de puerta: sale en la lista con
+  "Cómo llegar", sin pin. T&M Pet Style tiene 2 locales más sin dirección en la lista de distribución.
+
+## Tiendas del mapa
+
+Los puntos de venta están en `STORES` dentro de `main.js`, uno por local: nombre comercial, logo, distrito, dirección,
+latitud, longitud y si también vende online. Una fila sin dirección es una tienda solo online (sale en la lista, sin
+pin); una con dirección pero sin coordenadas sale en la lista con "Cómo llegar", sin pin. Las coordenadas se ubicaron por número de puerta con OpenStreetMap; "Cómo llegar" abre Google Maps con el
+nombre y la dirección, así que lleva a la tienda aunque el pin quede a unas casas.
 - El formulario de contacto no tiene servidor: al enviarlo abre el correo del visitante con el mensaje
   listo para marketingpets@solvet.com.pe. Si se quiere envío directo, conectarlo a un servicio (Formspree, CRM...).

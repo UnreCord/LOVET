@@ -812,50 +812,32 @@ stepTabs.forEach((tab, i) => {
 /* =========================================================
    5. DONDE COMPRAR: mapa con los puntos de venta
    ========================================================= */
-// DATOS DE EJEMPLO: reemplazar por los distribuidores reales de LOVET
-const DISTRICTS = {
-  'Miraflores': [-12.1211, -77.0297],
-  'San Isidro': [-12.0977, -77.0365],
-  'Santiago de Surco': [-12.1335, -76.9935],
-  'San Borja': [-12.1010, -76.9985],
-  'Surquillo': [-12.1125, -77.0170],
-  'Barranco': [-12.1470, -77.0210],
-  'Lince': [-12.0855, -77.0350],
-  'Jesús María': [-12.0745, -77.0480],
-  'Magdalena del Mar': [-12.0915, -77.0695],
-  'Pueblo Libre': [-12.0755, -77.0630],
-  'San Miguel': [-12.0790, -77.0880],
-  'La Molina': [-12.0870, -76.9440]
-};
+// clientes de LOVET (lista de clientes de Solpet). Coordenadas de OpenStreetMap; "Cómo llegar" usa la dirección.
+// [nombre, logo, tipo, distrito, dirección, lat, lng, nota]; sin lat/lng = tienda solo online
 const STORES = [
-  ['Kiwoko', 'kiwoko', 'Tienda para mascotas', 'Miraflores', 'Av. José Larco cdra. 7', 0.002, -0.001],
-  ['Caprabo', 'caprabo', 'Supermercado', 'Miraflores', 'Av. Benavides cdra. 4', -0.004, 0.003],
-  ['Tiendanimal', 'tiendanimal', 'Tienda para mascotas', 'Miraflores', 'Av. Comandante Espinar cdra. 3', 0.005, -0.004],
-  ['Distrivet', 'distrivet', 'Distribuidora veterinaria', 'San Isidro', 'Av. Conquistadores cdra. 5', 0.002, -0.003],
-  ['Eroski', 'eroski', 'Supermercado', 'San Isidro', 'Av. Dos de Mayo cdra. 13', -0.003, 0.004],
-  ['Clarel', 'clarel', 'Tienda de cuidado personal', 'San Isidro', 'Av. Camino Real cdra. 3', 0.004, 0.006],
-  ['DinoSol', 'dinosol', 'Supermercado', 'Santiago de Surco', 'Av. Primavera cdra. 16', 0.01, 0.002],
-  ['Alimerka', 'alimerka', 'Supermercado', 'Santiago de Surco', 'Av. Caminos del Inca cdra. 2', 0.004, 0.008],
-  ['Llobet', 'llobet', 'Supermercado', 'Santiago de Surco', 'Av. Benavides cdra. 40', -0.004, -0.006],
-  ['Bonpreu Esclat', 'bonpreu-esclat', 'Supermercado', 'San Borja', 'Av. San Luis cdra. 25', 0.003, 0.002],
-  ['Plaza', 'plaza', 'Supermercado', 'San Borja', 'Av. Aviación cdra. 28', -0.004, -0.004],
-  ['SPAR', 'spar', 'Supermercado', 'Surquillo', 'Av. Angamos Este cdra. 5', 0.002, 0.001],
-  ['Lupa', 'lupa', 'Supermercado', 'Surquillo', 'Av. República de Panamá cdra. 48', -0.003, -0.004],
-  ['Pladevall', 'pladevall', 'Supermercado', 'Barranco', 'Av. Grau cdra. 3', 0.002, 0.001],
-  ['Sorli', 'sorli', 'Supermercado', 'Barranco', 'Av. San Martín cdra. 2', -0.003, -0.003],
-  ['Gadisa', 'gadisa', 'Supermercado', 'Lince', 'Av. Arequipa cdra. 21', 0.001, 0.003],
-  ['Novavenda', 'novavenda', 'Tienda online con recojo', 'Lince', 'Av. Petit Thouars cdra. 22', -0.003, 0.005],
-  ['Altoaragón', 'altoaragon', 'Supermercado', 'Jesús María', 'Av. Salaverry cdra. 20', 0.001, 0.004],
-  ['Cencosu SPAR', 'cencosu-spar', 'Supermercado', 'Jesús María', 'Av. Brasil cdra. 14', 0.003, -0.004],
-  ['Fragadis SPAR', 'fragadis-spar', 'Supermercado', 'Magdalena del Mar', 'Av. Brasil cdra. 30', 0.002, 0.002],
-  ['Plusfresc', 'plusfresc', 'Supermercado', 'Pueblo Libre', 'Av. La Mar cdra. 9', 0, 0],
-  ['SPAR Exclub', 'spar-exclub', 'Supermercado', 'San Miguel', 'Av. La Marina cdra. 20', 0.001, 0.002],
-  ['Super Grup', 'super-grup', 'Supermercado', 'La Molina', 'Av. La Molina cdra. 12', 0, 0]
-].map(([name, logo, type, district, addr, dLat, dLng], id) => ({
-  id, name, logo: asset(`assets/logos/${logo}.png`), type, district, addr,
-  lat: DISTRICTS[district][0] + dLat,
-  lng: DISTRICTS[district][1] + dLng
+  ['Miushop', 'miushop', 'Pet shop', 'Santiago de Surco', 'Av. Caminos del Inca 1685', -12.14395, -76.98520],
+  ['Wasi Pet', 'wasi-pet', 'Veterinaria y pet shop', 'San Miguel', 'Av. Brígida Silva de Ochoa 210', -12.08147, -77.08877],
+  ['Royal Pet', 'royal-pet', 'Pet shop', 'Lince', 'Jr. General Trinidad Morán 417', -12.0870, -77.0330],
+  ['Brisa Pet Shop', null, 'Pet shop', 'Magdalena del Mar', 'Av. Javier Prado Oeste 205', -12.0920, -77.0560, '2 locales'],
+  ['Mundo Pet', 'mundo-pet', 'Pet shop', 'Magdalena del Mar', 'Jr. Mariscal Ramón Castilla 778', -12.08563, -77.07172],
+  ['Veterinaria San Felipe', 'san-felipe', 'Veterinaria', 'San Miguel', 'Av. Los Precursores 538', -12.06921, -77.09779, 'También en Jesús María y Los Olivos'],
+  ['Gatuario', 'gatuario', 'Pet shop', 'Santiago de Surco', 'Av. Paseo de la Castellana 195', -12.13538, -77.00425, 'También en San Isidro'],
+  ['+Kotas', 'mas-kotas', 'Pet shop', 'Breña', 'Jr. Carhuaz 514', -12.05436, -77.05371],
+  ['100% Miau Gatos', '100-miau-gatos', 'Tienda para gatos', 'Miraflores', 'Calle José Toribio Polo 511', -12.11238, -77.04630],
+  ['Top Can', 'top-can', 'Pet shop', 'La Victoria', 'Jr. Huánuco 2194', -12.06638, -77.01496],
+  ['Neko Home', 'neko-home', 'Pet shop', 'Santiago de Surco', 'Av. Morro Solar 1252', -12.1290, -76.9830],
+  ['Monivet Center', 'monivet', 'Veterinaria', 'Santiago de Surco', 'Calle Loma Ponciana 164', -12.13467, -76.98575],
+  ['T&M Pet Style', 'tm-petshop', 'Pet shop', 'Lince', 'Av. Coronel José Leal 210', -12.08553, -77.04084, 'También en La Victoria y Magdalena'],
+  ['Mr. Pet', 'mr-pet', 'Veterinaria y pet shop', 'La Molina', 'Calle Samoa 336', -12.08304, -76.89805],
+  ["Pet's Canadá", 'pets-canada', 'Veterinaria y pet shop', 'La Victoria', 'Av. Canadá 1539', -12.08195, -77.02470],
+  ['Patmo Pet', 'patmo', 'Tienda online', 'Tiendas online', 'Venta online con delivery en Lima'],
+  ['Animalia Store', 'animalia', 'Tienda online', 'Tiendas online', 'Venta online con delivery en Lima']
+].map(([name, logo, type, district, addr, lat, lng, note], id) => ({
+  id, name, logo: logo && asset(`assets/logos/${logo}.webp`), type, district, addr, note,
+  online: lat === undefined, lat, lng
 }));
+const ONLINE = 'Tiendas online';
+const onMap = list => list.filter(s => !s.online);
 
 const storeList = $('#store-list');
 const storeCount = $('#store-count');
@@ -864,7 +846,7 @@ const nearBtn = $('#near-me');
 let map = null, mapReady = false, selectedId = null, userPos = null, popup = null, meMarker = null;
 
 const normalize = s => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
-const directionsUrl = s => `https://www.google.com/maps/dir/?api=1&destination=${s.lat.toFixed(5)},${s.lng.toFixed(5)}`;
+const directionsUrl = s => `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(`${s.name}, ${s.addr}, ${s.district}, Lima, Perú`)}`;
 
 function distanceKm(a, b) {
   const rad = x => (x * Math.PI) / 180;
@@ -876,8 +858,8 @@ const distanceText = km => (km < 1 ? `a ${Math.round(km * 100) * 10} m` : `a ${d
 
 function visibleStores() {
   const q = normalize(storeQuery.value);
-  let list = STORES.filter(s => !q || normalize(`${s.name} ${s.district} ${s.addr} ${s.type}`).includes(q));
-  if (userPos) list = list.map(s => ({ ...s, km: distanceKm(userPos, s) })).sort((a, b) => a.km - b.km);
+  let list = STORES.filter(s => !q || normalize(`${s.name} ${s.district} ${s.addr} ${s.type} ${s.note || ''}`).includes(q));
+  if (userPos) list = list.map(s => (s.online ? s : { ...s, km: distanceKm(userPos, s) })).sort((a, b) => (a.km ?? 1e9) - (b.km ?? 1e9));
   return list;
 }
 
@@ -893,8 +875,15 @@ function renderStores() {
   storeList.innerHTML = '';
   const districts = [...new Set(list.map(s => s.district))];
   if (!userPos) districts.sort((a, b) => a.localeCompare(b, 'es'));
+  // las tiendas online van al final de la lista
+  if (districts.includes(ONLINE)) districts.push(districts.splice(districts.indexOf(ONLINE), 1)[0]);
+  const shops = onMap(list), online = list.length - shops.length;
+  const shopDistricts = new Set(shops.map(s => s.district)).size;
   storeCount.textContent = list.length
-    ? `${plural(list.length, 'punto de venta', 'puntos de venta')} en ${plural(districts.length, 'distrito', 'distritos')}${userPos ? ', del más cercano al más lejano' : ''}.`
+    ? [
+        shops.length ? `${plural(shops.length, 'punto de venta', 'puntos de venta')} en ${plural(shopDistricts, 'distrito', 'distritos')}` : '',
+        online ? plural(online, 'tienda online', 'tiendas online') : ''
+      ].filter(Boolean).join(' y ') + (userPos && shops.length ? ', del más cercano al más lejano.' : '.')
     : '';
 
   if (!list.length) {
@@ -909,27 +898,28 @@ function renderStores() {
       const row = el('div', 'store');
       row.dataset.id = s.id;
       if (s.id === selectedId) row.classList.add('is-active');
-      const logo = el('span', 'store__logo');
-      const img = el('img');
-      img.src = s.logo;
-      img.alt = '';
-      img.loading = 'lazy';
-      logo.appendChild(img);
       const pick = el('button', 'store__pick');
       pick.type = 'button';
       pick.appendChild(el('span', 'store__name', s.name));
       pick.appendChild(el('span', 'store__addr', s.addr));
+      if (s.note) pick.appendChild(el('span', 'store__note', s.note));
       if (s.km !== undefined) pick.appendChild(el('span', 'store__dist', distanceText(s.km)));
-      const go = el('a', 'store__go', 'Cómo llegar');
-      go.href = directionsUrl(s);
-      go.target = '_blank';
-      go.rel = 'noopener';
-      go.setAttribute('aria-label', `Cómo llegar a ${s.name}, ${s.addr}`);
-      row.append(logo, pick, go);
-      row.addEventListener('click', e => {
-        if (e.target.closest('a')) return;
-        selectStore(s.id, true);
-      });
+      row.append(storeLogo(s), pick);
+      if (s.online) {
+        row.classList.add('store--online');
+        pick.disabled = true;
+      } else {
+        const go = el('a', 'store__go', 'Cómo llegar');
+        go.href = directionsUrl(s);
+        go.target = '_blank';
+        go.rel = 'noopener';
+        go.setAttribute('aria-label', `Cómo llegar a ${s.name}, ${s.addr}`);
+        row.append(go);
+        row.addEventListener('click', e => {
+          if (e.target.closest('a')) return;
+          selectStore(s.id, true);
+        });
+      }
       storeList.appendChild(row);
     });
   });
@@ -939,10 +929,27 @@ function renderStores() {
   }
 }
 
+// logo de la tienda; si aún no tenemos su logo, sus iniciales
+function storeLogo(s) {
+  const box = el('span', 'store__logo');
+  if (s.logo) {
+    const img = el('img');
+    img.src = s.logo;
+    img.alt = '';
+    img.loading = 'lazy';
+    img.width = img.height = 200;
+    box.appendChild(img);
+  } else {
+    box.classList.add('store__logo--initials');
+    box.textContent = s.name.split(' ').slice(0, 2).map(w => w[0]).join('');
+  }
+  return box;
+}
+
 function toGeoJSON(list) {
   return {
     type: 'FeatureCollection',
-    features: list.map(s => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [s.lng, s.lat] }, properties: { id: s.id } }))
+    features: onMap(list).map(s => ({ type: 'Feature', geometry: { type: 'Point', coordinates: [s.lng, s.lat] }, properties: { id: s.id } }))
   };
 }
 
@@ -961,14 +968,11 @@ function selectStore(id, fly) {
   }
   if (popup) popup.remove();
   const box = el('div', 'pop');
-  const img = el('img');
-  img.src = s.logo;
-  img.alt = '';
   const go = el('a', '', 'Cómo llegar');
   go.href = directionsUrl(s);
   go.target = '_blank';
   go.rel = 'noopener';
-  box.append(img, el('strong', '', s.name), el('span', '', `${s.type}. ${s.addr}, ${s.district}.`), go);
+  box.append(storeLogo(s), el('strong', '', s.name), el('span', '', `${s.type}. ${s.addr}, ${s.district}.${s.note ? ` ${s.note}.` : ''}`), go);
   popup = new maplibregl.Popup({ offset: [0, -40], maxWidth: '260px', focusAfterOpen: false })
     .setLngLat([s.lng, s.lat]).setDOMContent(box).addTo(map);
 }
@@ -1075,12 +1079,13 @@ function addStoreLayers() {
 }
 
 function fitStores(list, animate) {
+  list = onMap(list);
   if (!list.length) return;
   const bounds = new maplibregl.LngLatBounds();
   list.forEach(s => bounds.extend([s.lng, s.lat]));
   const wide = !stacked.matches;
   const padding = wide
-    ? { top: 110, bottom: 50, left: Math.min(520, window.innerWidth * 0.4), right: 190 }
+    ? { top: 110, bottom: 50, left: Math.min(520, window.innerWidth * 0.4), right: 300 }
     : { top: 70, bottom: 50, left: 30, right: 30 };
   map.fitBounds(bounds, { padding, maxZoom: 14.5, duration: animate && !reduceMotion ? 700 : 0 });
 }
@@ -1137,7 +1142,7 @@ nearBtn.addEventListener('click', () => {
     nearBtn.disabled = false;
     nearBtn.textContent = 'Cerca de mí';
     renderStores();
-    const nearest = visibleStores()[0];
+    const nearest = onMap(visibleStores())[0];
     if (mapReady) {
       if (!meMarker) {
         const dot = el('span', 'me-dot');

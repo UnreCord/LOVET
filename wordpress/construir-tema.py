@@ -3,19 +3,23 @@
     python3 wordpress/construir-tema.py
 
 Crea wordpress/dist/lovet.zip, listo para subir en WordPress desde
-Apariencia > Temas > Añadir nuevo tema > Subir tema.
+Apariencia > Temas > Añadir nuevo tema > Subir tema, y una copia en
+wordpress/playground/lovet.zip, que es la que instala el enlace de
+WordPress Playground (ver el README).
 
 La portada del tema es index.html convertida a plantilla (front-page.php), con
 styles.css, main.js y la carpeta assets/ tal cual. Despues de cambiar la pagina
 basta con volver a correr este script y subir el zip nuevo.
 """
 import re
+import shutil
 import zipfile
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 TEMA = ROOT / 'wordpress' / 'tema'
 DIST = ROOT / 'wordpress' / 'dist'
+PLAYGROUND = ROOT / 'wordpress' / 'playground'
 VERSION = re.search(r"define\( 'LOVET_VERSION', '([^']+)' \)", (TEMA / 'functions.php').read_text()).group(1)
 
 CABECERA = f"""/*
@@ -76,7 +80,9 @@ def main():
         for archivo in sorted((ROOT / 'assets').rglob('*')):
             if archivo.is_file():
                 z.write(archivo, f'lovet/{archivo.relative_to(ROOT).as_posix()}')
+    shutil.copyfile(salida, PLAYGROUND / 'lovet.zip')
     print(f'{salida.relative_to(ROOT)} ({salida.stat().st_size / 1e6:.1f} MB), tema LOVET {VERSION}')
+    print(f'Copia para Playground: {(PLAYGROUND / "lovet.zip").relative_to(ROOT)}')
 
 
 if __name__ == '__main__':

@@ -66,6 +66,8 @@ https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.co
 
 - Veterinaria San Felipe en Los Olivos ("Asentamiento San Martín") no tiene número de puerta: sale en la lista con
   "Cómo llegar", sin pin. T&M Pet Style tiene 2 locales más sin dirección en la lista de distribución.
+- Logo de Peluvet (misma razón social que Veterinaria San Felipe, otro nombre comercial): por ahora sale con su
+  inicial. Guardarlo como `assets/logos/peluvet.webp` y poner `'peluvet'` en su fila de `STORES` (`main.js`).
 
 ## Tiendas del mapa
 

@@ -8,7 +8,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LOVET_VERSION', '1.3.0' );
+define( 'LOVET_VERSION', '1.3.1' );
 
 add_action( 'after_setup_theme', function () {
 	add_theme_support( 'automatic-feed-links' );

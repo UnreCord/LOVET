@@ -28,6 +28,8 @@ Luego abre la dirección que muestra la terminal. `LOVET.html` e `index.html` so
 ## WordPress
 
 La página se instala en WordPress como un tema, y queda igual que la versión HTML.
+La guía paso a paso para instalarla y lo que se puede editar desde el panel está en
+[`wordpress/INSTALACION.md`](wordpress/INSTALACION.md).
 
 1. Arma el tema (desde esta carpeta):
 
@@ -68,6 +70,8 @@ https://playground.wordpress.net/?blueprint-url=https://raw.githubusercontent.co
   "Cómo llegar", sin pin. T&M Pet Style tiene 2 locales más sin dirección en la lista de distribución.
 - Logo de Peluvet (misma razón social que Veterinaria San Felipe, otro nombre comercial): por ahora sale con su
   inicial. Guardarlo como `assets/logos/peluvet.webp` y poner `'peluvet'` en su fila de `STORES` (`main.js`).
+- El formulario de contacto no tiene servidor: al enviarlo abre el correo del visitante con el mensaje
+  listo para marketingpets@solvet.com.pe. Si se quiere envío directo, conectarlo a un servicio (Formspree, CRM...).
 
 ## Tiendas del mapa
 
@@ -75,5 +79,3 @@ Los puntos de venta están en `STORES` dentro de `main.js`, uno por local: nombr
 latitud, longitud y si también vende online. Una fila sin dirección es una tienda solo online (sale en la lista, sin
 pin); una con dirección pero sin coordenadas sale en la lista con "Cómo llegar", sin pin. Las coordenadas se ubicaron por número de puerta con OpenStreetMap; "Cómo llegar" abre Google Maps con el
 nombre y la dirección, así que lleva a la tienda aunque el pin quede a unas casas.
-- El formulario de contacto no tiene servidor: al enviarlo abre el correo del visitante con el mensaje
-  listo para marketingpets@solvet.com.pe. Si se quiere envío directo, conectarlo a un servicio (Formspree, CRM...).

@@ -812,24 +812,25 @@ stepTabs.forEach((tab, i) => {
 /* =========================================================
    5. DONDE COMPRAR: mapa con los puntos de venta
    ========================================================= */
-// clientes de LOVET (lista de clientes de Solpet). Coordenadas de OpenStreetMap; "Cómo llegar" usa la dirección.
+// clientes de LOVET (lista de clientes de Solpet). Coordenadas ubicadas por número de puerta con OpenStreetMap;
+// "Cómo llegar" abre Google Maps con el nombre y la dirección.
 // [nombre, logo, tipo, distrito, dirección, lat, lng, nota]; sin lat/lng = tienda solo online
 const STORES = [
-  ['Miushop', 'miushop', 'Pet shop', 'Santiago de Surco', 'Av. Caminos del Inca 1685', -12.14395, -76.98520],
-  ['Wasi Pet', 'wasi-pet', 'Veterinaria y pet shop', 'San Miguel', 'Av. Brígida Silva de Ochoa 210', -12.08147, -77.08877],
-  ['Royal Pet', 'royal-pet', 'Pet shop', 'Lince', 'Jr. General Trinidad Morán 417', -12.0870, -77.0330],
-  ['Brisa Pet Shop', null, 'Pet shop', 'Magdalena del Mar', 'Av. Javier Prado Oeste 205', -12.0920, -77.0560, '2 locales'],
-  ['Mundo Pet', 'mundo-pet', 'Pet shop', 'Magdalena del Mar', 'Jr. Mariscal Ramón Castilla 778', -12.08563, -77.07172],
-  ['Veterinaria San Felipe', 'san-felipe', 'Veterinaria', 'San Miguel', 'Av. Los Precursores 538', -12.06921, -77.09779, 'También en Jesús María y Los Olivos'],
-  ['Gatuario', 'gatuario', 'Pet shop', 'Santiago de Surco', 'Av. Paseo de la Castellana 195', -12.13538, -77.00425, 'También en San Isidro'],
-  ['+Kotas', 'mas-kotas', 'Pet shop', 'Breña', 'Jr. Carhuaz 514', -12.05436, -77.05371],
+  ['Miushop', 'miushop', 'Pet shop', 'Santiago de Surco', 'Av. Caminos del Inca 1685', -12.12695, -76.98174],
+  ['Wasi Pet', 'wasi-pet', 'Veterinaria y pet shop', 'San Miguel', 'Av. Brígida Silva de Ochoa 210', -12.08218, -77.08886],
+  ['Royal Pet', 'royal-pet', 'Pet shop', 'Lince', 'Jr. General Trinidad Morán 417', -12.08950, -77.03665],
+  ['Brisa Pet Shop', null, 'Pet shop', 'Magdalena del Mar', 'Av. Javier Prado Oeste 205', -12.09079, -77.06533, '2 locales'],
+  ['Mundo Pet', 'mundo-pet', 'Pet shop', 'Magdalena del Mar', 'Jr. Mariscal Ramón Castilla 778', -12.08978, -77.07317],
+  ['Veterinaria San Felipe', 'san-felipe', 'Veterinaria', 'San Miguel', 'Av. Los Precursores 538', -12.06954, -77.09375, 'También en Jesús María y Los Olivos'],
+  ['Gatuario', 'gatuario', 'Pet shop', 'Santiago de Surco', 'Av. Paseo de la Castellana 195', -12.13057, -77.00177, 'También en San Isidro'],
+  ['+Kotas', 'mas-kotas', 'Pet shop', 'Breña', 'Jr. Carhuaz 514', -12.05383, -77.04809],
   ['100% Miau Gatos', '100-miau-gatos', 'Tienda para gatos', 'Miraflores', 'Calle José Toribio Polo 511', -12.11238, -77.04630],
-  ['Top Can', 'top-can', 'Pet shop', 'La Victoria', 'Jr. Huánuco 2194', -12.06638, -77.01496],
-  ['Neko Home', 'neko-home', 'Pet shop', 'Santiago de Surco', 'Av. Morro Solar 1252', -12.1290, -76.9830],
-  ['Monivet Center', 'monivet', 'Veterinaria', 'Santiago de Surco', 'Calle Loma Ponciana 164', -12.13467, -76.98575],
-  ['T&M Pet Style', 'tm-petshop', 'Pet shop', 'Lince', 'Av. Coronel José Leal 210', -12.08553, -77.04084, 'También en La Victoria y Magdalena'],
+  ['Top Can', 'top-can', 'Pet shop', 'La Victoria', 'Jr. Huánuco 2194', -12.07110, -77.01444],
+  ['Neko Home', 'neko-home', 'Pet shop', 'Santiago de Surco', 'Av. Morro Solar 1252', -12.13020, -76.97720],
+  ['Monivet Center', 'monivet', 'Veterinaria', 'Santiago de Surco', 'Calle Loma Ponciana 164', -12.13472, -76.98624],
+  ['T&M Pet Style', 'tm-petshop', 'Pet shop', 'Lince', 'Av. Coronel José Leal 210', -12.08390, -77.03650, 'También en La Victoria y Magdalena'],
   ['Mr. Pet', 'mr-pet', 'Veterinaria y pet shop', 'La Molina', 'Calle Samoa 336', -12.08304, -76.89805],
-  ["Pet's Canadá", 'pets-canada', 'Veterinaria y pet shop', 'La Victoria', 'Av. Canadá 1539', -12.08195, -77.02470],
+  ["Pet's Canadá", 'pets-canada', 'Veterinaria y pet shop', 'La Victoria', 'Av. Canadá 1539', -12.08427, -77.00696],
   ['Patmo Pet', 'patmo', 'Tienda online', 'Tiendas online', 'Venta online con delivery en Lima'],
   ['Animalia Store', 'animalia', 'Tienda online', 'Tiendas online', 'Venta online con delivery en Lima']
 ].map(([name, logo, type, district, addr, lat, lng, note], id) => ({

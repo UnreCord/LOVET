@@ -114,6 +114,13 @@ button, input { font: inherit; color: inherit; }
   white-space: nowrap;
 }
 .store__go:hover { color: var(--verde-900); }
+.store__links { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.store__web {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 32px;
+  font-size: .8rem; font-weight: 700; color: var(--verde-900); white-space: nowrap; text-decoration: none;
+}
+.store__web::after { content: "↗"; font-size: .9em; color: var(--verde); }
+.store__web:hover { text-decoration: underline; text-decoration-color: var(--amarillo); text-decoration-thickness: 2px; text-underline-offset: 4px; }
 .stores__empty { padding: 18px 0; font-size: .92rem; }
 
 /* ---------- mapa ---------- */
@@ -140,7 +147,8 @@ button, input { font: inherit; color: inherit; }
 .pop .store__logo { width: 56px; height: 56px; margin-bottom: 6px; }
 .pop strong { color: var(--verde-900); font-size: 1rem; line-height: 1.2; }
 .pop span { font-size: .85rem; line-height: 1.35; }
-.pop .store__go { justify-self: start; min-height: 30px; }
+.pop .store__links { flex-direction: row; justify-content: flex-start; gap: 16px; margin-top: 2px; }
+.pop .store__go, .pop .store__web { min-height: 30px; }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; scroll-behavior: auto !important; }

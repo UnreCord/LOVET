@@ -27,8 +27,9 @@ y abrir `/mapa-solpet/`. Para publicarlo basta subir la carpeta `mapa-solpet/` c
 
 ## Archivos
 
-- `comun/tiendas.js`: **los puntos de venta** (nombre, logo, distrito, dirección, coordenadas, si vende online).
-  Una fila sin dirección es una tienda solo online; con dirección pero sin coordenadas sale en la lista sin pin.
+- `comun/tiendas.js`: **los puntos de venta**, tomados de la tabla `DIRECCIONES.xlsx` (nombre, logo, distrito,
+  dirección, coordenadas y web si tiene tienda online). Una fila sin dirección es una tienda solo online; con dirección
+  pero sin coordenadas sale en la lista sin pin. La tabla trae también los productos de cada punto, pero el mapa no los muestra.
 - `comun/mapa.js`, `comun/base.css`: lo que comparten las dos propuestas (mapa, pines, lista, colores).
 - `propuesta-1/`, `propuesta-2/`: página, estilos y comportamiento de cada propuesta.
 - `assets/logos/`: logos de los clientes (cuadrados de 240 px en WebP). Para una tienda nueva, guardar su logo ahí y
@@ -55,5 +56,15 @@ corta y estable (por ejemplo `solpet.com.pe/mapa`): si luego cambia, los QR impr
 
 ## Pendiente
 
-- Veterinaria San Felipe en Los Olivos ("Asentamiento San Martín") no tiene número de puerta: sale en la lista sin pin.
-- Peluvet no tiene logo: sale con sus iniciales.
+- **Sin pin** (salen en la lista con "Cómo llegar"):
+  - Veterinaria San Felipe, Los Olivos ("Asentamiento San Martín"): no tiene número de puerta.
+  - Veterinaria Mundo Animal, Chorrillos ("Av. Alameda Los Horizontes Mza. A1 Lote 15 Urb. L..."): en la tabla la
+    urbanización está cortada y la avenida es larga; falta el nombre completo de la urbanización.
+  - Peluditos Pet Shop, "Av. Central 993, Lima": no hay una Av. Central en el Cercado de Lima; falta confirmar el distrito.
+- **Pin aproximado** (marcados `'calle'` en `tiendas.js`): OpenStreetMap no tiene esos números de puerta y el pin se
+  calculó sobre el trazo de la calle (100 números ≈ una cuadra), así que puede quedar a una o dos cuadras: The Urban Pets,
+  American Vet (San Borja), Lumpet, Peluditos (Pueblo Libre), Naricitas (×2), Pals & Tails, T&M (Magdalena y La Victoria)
+  y Veterinaria Engreídos. Para corregir uno, copiar las coordenadas del local en Google Maps (clic derecho sobre el
+  local) y pegarlas en su fila.
+- **Logos que faltan** (salen con sus iniciales): The Urban Pets, American Vet, Lumpet, Peluditos, Naricitas,
+  Pals & Tails, Peluvet Spa, Veterinaria Mundo Animal y Veterinaria Engreídos.

@@ -115,7 +115,8 @@ body { overflow: hidden; }
 
   .store { grid-template-columns: 48px minmax(0, 1fr); gap: 4px 12px; padding: 10px; }
   .store__logo { width: 48px; height: 48px; grid-row: span 2; align-self: start; }
-  .store__go { grid-column: 2; justify-self: start; min-height: 32px; }
+  .store__links { grid-column: 2; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; gap: 0 18px; }
+  .store__go, .store__web { min-height: 34px; }
   .store.is-active { box-shadow: inset 3px 0 0 var(--amarillo); }
 }
 

@@ -32,7 +32,7 @@
   // tiendas que coinciden con la búsqueda; con ubicación, de la más cercana a la más lejana
   function filter(stores, query, userPos) {
     const q = normalize(query || '');
-    let list = stores.filter(s => !q || normalize(`${s.name} ${s.district} ${s.addr}${s.web || s.online ? ' online' : ''}`).includes(q));
+    let list = stores.filter(s => !q || normalize(`${s.name} ${s.district} ${s.addr}${s.url ? ' online web' : ''}`).includes(q));
     if (userPos) {
       list = list
         .map(s => (s.lat === undefined ? s : { ...s, km: distanceKm(userPos, s) }))
@@ -78,6 +78,16 @@
     return go;
   }
 
+  // web de la tienda (las que venden online)
+  function webLink(s, text = 'Tienda online', cls = 'store__web') {
+    const a = el('a', cls, text);
+    a.href = s.url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    a.setAttribute('aria-label', `Tienda online de ${s.name} (abre su web)`);
+    return a;
+  }
+
   // lista agrupada por distrito (el mismo diseño de la sección "Dónde comprar")
   function renderList(box, list, { selectedId = null, userPos = null, query = '', onPick } = {}) {
     box.innerHTML = '';
@@ -105,24 +115,23 @@
         pick.type = 'button';
         pick.appendChild(el('span', 'store__name', s.name));
         pick.appendChild(el('span', 'store__addr', s.addr));
-        if (s.web) pick.appendChild(el('span', 'store__note', 'También vende online'));
         if (s.km !== undefined) pick.appendChild(el('span', 'store__dist', distanceText(s.km)));
-        row.append(logo(s), pick);
+        const links = el('span', 'store__links');
+        row.append(logo(s), pick, links);
+        if (!s.online) links.append(goLink(s));
+        if (s.url) links.append(webLink(s, s.online ? 'Visitar tienda' : 'Tienda online'));
         if (s.online) {
           row.classList.add('store--online');
           pick.disabled = true;
+        } else if (s.lat === undefined) {
+          row.classList.add('store--nopin');
+          pick.disabled = true;
         } else {
-          row.append(goLink(s));
-          if (s.lat === undefined) {
-            row.classList.add('store--nopin');
-            pick.disabled = true;
-          } else {
-            pick.setAttribute('aria-label', `${s.name}, ${s.addr}, ${s.district}. Ver en el mapa`);
-            row.addEventListener('click', e => {
-              if (e.target.closest('a')) return;
-              onPick && onPick(s.id);
-            });
-          }
+          pick.setAttribute('aria-label', `${s.name}, ${s.addr}, ${s.district}. Ver en el mapa`);
+          row.addEventListener('click', e => {
+            if (e.target.closest('a')) return;
+            onPick && onPick(s.id);
+          });
         }
         ul.appendChild(row);
       });
@@ -333,6 +342,6 @@
 
   window.Solpet = {
     reduceMotion, normalize, plural, el, onMap, directionsUrl, distanceText,
-    filter, countText, logo, goLink, renderList, markActive, createMap, locate
+    filter, countText, logo, goLink, webLink, renderList, markActive, createMap, locate
   };
 })();

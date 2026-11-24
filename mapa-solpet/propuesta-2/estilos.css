@@ -73,6 +73,7 @@ body { overflow: hidden; overscroll-behavior: none; }
 .card__foot { grid-column: 2; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
 .card__go { min-height: 38px; padding: 0 16px; font-size: .86rem; }
 .card .store__dist { margin-top: 0; }
+.card__foot .store__web { min-height: 38px; }
 /* ultima tarjeta: las tiendas que no tienen pin */
 .card--more { grid-template-columns: 1fr; align-content: center; background: var(--verde); color: var(--blanco); }
 .card--more strong { font-size: 1.05rem; line-height: 1.2; }
@@ -107,6 +108,7 @@ body.list-open .deck { transform: translateY(110%); }
   border: 0; border-radius: 50%; background: var(--bruma); color: var(--verde); cursor: pointer;
 }
 .sheet__close svg { width: 20px; height: 20px; }
+.sheet .store__links { gap: 0; }
 .sheet__list {
   flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
   padding: 0 16px calc(16px + var(--safe-b));
@@ -166,6 +168,7 @@ body.list-open .deck { transform: translateY(110%); }
   .sheet__grip { display: none; }
   .sheet__head { padding: 20px 24px 6px; }
   .sheet__title { font-size: 2rem; }
-  .sheet__list { padding: 0 24px 16px; }
+  .sheet .store__links { gap: 0; }
+.sheet__list { padding: 0 24px 16px; }
   body.list-open .deck { transform: none; left: 468px; }
 }

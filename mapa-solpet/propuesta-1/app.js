@@ -61,11 +61,14 @@
     if (fly) view.focus(s);
     if (popup) popup.remove();
     const box = S.el('div', 'pop');
+    const links = S.el('span', 'store__links');
+    links.append(S.goLink(s));
+    if (s.url) links.append(S.webLink(s));
     box.append(
       S.logo(s),
       S.el('strong', '', s.name),
-      S.el('span', '', `${s.addr}, ${s.district}.${s.web ? ' También vende online.' : ''}`),
-      S.goLink(s)
+      S.el('span', '', `${s.addr}, ${s.district}.`),
+      links
     );
     popup = new maplibregl.Popup({ offset: [0, -50], maxWidth: '270px', focusAfterOpen: false })
       .setLngLat([s.lng, s.lat]).setDOMContent(box).addTo(view.map);

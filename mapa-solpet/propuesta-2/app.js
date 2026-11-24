@@ -52,10 +52,10 @@
     pick.type = 'button';
     pick.setAttribute('aria-label', `${s.name}, ${s.addr}, ${s.district}. Ver en el mapa`);
     pick.append(S.el('span', 'card__district', s.district), S.el('span', 'store__name', s.name), S.el('span', 'store__addr', s.addr));
-    if (s.web) pick.appendChild(S.el('span', 'store__note', 'También vende online'));
     const foot = S.el('div', 'card__foot');
     const go = S.goLink(s, 'Cómo llegar', 'btn btn--verde card__go');
     foot.appendChild(go);
+    if (s.url) foot.appendChild(S.webLink(s));
     if (s.km !== undefined) foot.appendChild(S.el('span', 'store__dist', S.distanceText(s.km)));
     li.append(S.logo(s), pick, foot);
     li.addEventListener('click', e => {

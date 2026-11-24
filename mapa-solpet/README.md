@@ -60,7 +60,7 @@ corta y estable (por ejemplo `solpet.com.pe/mapa`): si luego cambia, los QR impr
   - Veterinaria San Felipe, Los Olivos ("Asentamiento San Martín"): no tiene número de puerta.
   - Veterinaria Mundo Animal, Chorrillos ("Av. Alameda Los Horizontes Mza. A1 Lote 15 Urb. L..."): en la tabla la
     urbanización está cortada y la avenida es larga; falta el nombre completo de la urbanización.
-  - Peluditos Pet Shop, "Av. Central 993, Lima": no hay una Av. Central en el Cercado de Lima; falta confirmar el distrito.
+  - Peluditos Pet Shop, "Av. Central 993, Lima": OpenStreetMap no encuentra una Av. Central en el Cercado de Lima; falta confirmar el distrito.
 - **Pin aproximado** (marcados `'calle'` en `tiendas.js`): OpenStreetMap no tiene esos números de puerta y el pin se
   calculó sobre el trazo de la calle (100 números ≈ una cuadra), así que puede quedar a una o dos cuadras: The Urban Pets,
   American Vet (San Borja), Lumpet, Peluditos (Pueblo Libre), Naricitas (×2), Pals & Tails, T&M (Magdalena y La Victoria)

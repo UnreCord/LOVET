@@ -37,7 +37,7 @@
     ['Miau 100% Gatos', '100-miau-gatos', 'Miraflores', 'Calle José Toribio Polo 511', -12.11238, -77.04630, WEB.miau],
     ['Peluditos Pet Shop', null, 'Pueblo Libre', 'Av. Manuel Cipriano Dulanto 1668', -12.07644, -77.07358, WEB.peluditos, 'calle'],
     ['Peluditos Pet Shop', null, 'Surquillo', 'Av. Manuel Villarán 770', -12.12128, -77.00415, WEB.peluditos, 'osm'],
-    // "Av. Central 993, Lima": no hay una Av. Central en el Cercado; falta confirmar el distrito
+    // "Av. Central 993, Lima": OpenStreetMap no encuentra una Av. Central en el Cercado; falta confirmar el distrito
     ['Peluditos Pet Shop', null, 'Lima', 'Av. Central 993', undefined, undefined, WEB.peluditos],
     ['Neko Home', 'neko-home', 'Santiago de Surco', 'Jr. Morro Solar 1252', -12.13020, -76.97720],
     ['Naricitas Pet Shop', null, 'Magdalena del Mar', 'Jirón Castilla 690', -12.08931, -77.07313, WEB.naricitas, 'calle'],

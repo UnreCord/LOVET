@@ -1,0 +1,155 @@
+/* Mapa Solpet: paleta, tipografía y piezas comunes (lista de tiendas, buscador, pines) */
+:root {
+  --verde: #007A33;
+  --verde-900: #005a26;
+  --verde-050: #e6f2ea;
+  --amarillo: #F6BB2F;
+  --amarillo-100: #fdf1d3;
+  --plomo: #50534c;
+  --bruma: #eff3ee;
+  --linea: #dfe6df;
+  --blanco: #ffffff;
+
+  --display: "Bricolage Grotesque", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --ease: cubic-bezier(.7, 0, .2, 1);
+  --safe-b: env(safe-area-inset-bottom, 0px);
+  --safe-t: env(safe-area-inset-top, 0px);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bruma);
+  color: var(--plomo);
+  font-family: var(--display);
+  font-size: 1rem;
+  line-height: 1.5;
+  font-optical-sizing: auto;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+}
+img { display: block; max-width: 100%; }
+h1, h2, h3, p, ul { margin: 0; }
+ul { padding: 0; list-style: none; }
+a { color: inherit; }
+button, input { font: inherit; color: inherit; }
+:focus-visible { outline: 2.5px solid var(--verde); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* ---------- botones ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 46px; padding: 0 18px;
+  border-radius: 999px; border: 2px solid transparent;
+  font-weight: 700; font-size: .95rem; line-height: 1; white-space: nowrap;
+  text-decoration: none; cursor: pointer;
+  transition: background-color .2s, color .2s, border-color .2s, transform .2s;
+}
+.btn:active { transform: scale(.97); }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn--verde { background: var(--verde); color: var(--blanco); }
+.btn--verde:hover { background: var(--verde-900); }
+.btn--verde:disabled { opacity: .7; cursor: progress; }
+
+/* ---------- buscador ---------- */
+.search { position: relative; flex: 1; min-width: 0; }
+.search svg {
+  position: absolute; left: 15px; top: 50%; width: 18px; height: 18px; transform: translateY(-50%);
+  color: var(--verde); pointer-events: none;
+}
+.search input {
+  width: 100%; min-height: 46px; padding: 0 16px 0 42px;
+  border: 1.5px solid #cfdad1; border-radius: 999px; background: var(--bruma); color: var(--verde-900);
+  font-size: 1rem; /* 16px: evita que iOS haga zoom al escribir */
+  -webkit-appearance: none; appearance: none;
+}
+.search input::placeholder { color: #85908a; }
+.search input:focus-visible { outline: none; border-color: var(--verde); background: var(--blanco); box-shadow: 0 0 0 3px rgba(0, 122, 51, .15); }
+.search input::-webkit-search-cancel-button { cursor: pointer; }
+
+/* ---------- lista de tiendas ---------- */
+.stores__count { font-size: .88rem; color: var(--plomo); }
+.stores__district {
+  position: sticky; top: 0; z-index: 1;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 12px 0 6px; background: var(--blanco);
+  font-size: .78rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--verde);
+}
+.stores__district span {
+  min-width: 24px; height: 24px; padding: 0 6px; border-radius: 999px; display: grid; place-items: center;
+  background: var(--verde-050); font-size: .75rem;
+}
+.store {
+  display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 12px;
+  padding: 10px; margin: 0 -10px; border-radius: 14px;
+  cursor: pointer;
+  transition: background-color .15s;
+}
+@media (hover: hover) { .store:hover { background: var(--bruma); } }
+.store.is-active { background: var(--amarillo-100); box-shadow: inset 3px 0 0 var(--amarillo); }
+.store__pick { min-width: 0; padding: 0; background: none; border: 0; text-align: left; cursor: pointer; }
+.store__pick:focus-visible { outline-offset: 6px; border-radius: 4px; }
+.store__logo {
+  width: 52px; height: 52px; display: grid; place-items: center; flex: none;
+  background: var(--blanco); border: 1px solid #e3e8e2; border-radius: 12px; overflow: hidden;
+}
+.store__logo img { width: 100%; height: 100%; object-fit: cover; }
+.store__logo--initials { background: var(--verde); border-color: var(--verde); color: var(--amarillo); font-weight: 800; font-size: 1.05rem; letter-spacing: .02em; }
+.store--online, .store--nopin { cursor: default; }
+.store--online:hover, .store--nopin:hover { background: none; }
+.store--online .store__pick, .store--nopin .store__pick { cursor: default; color: inherit; }
+.store__name { display: block; font-weight: 700; color: var(--verde-900); line-height: 1.2; }
+.store__addr { display: block; font-size: .85rem; line-height: 1.3; margin-top: 2px; }
+.store__note { display: block; font-size: .78rem; line-height: 1.3; color: var(--verde); margin-top: 2px; }
+.store__dist { display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 999px; background: var(--verde-050); font-size: .76rem; color: var(--verde-900); font-weight: 700; }
+.store__go {
+  display: inline-flex; align-items: center; min-height: 36px;
+  font-size: .84rem; font-weight: 700; color: var(--verde);
+  text-decoration: underline; text-decoration-color: var(--amarillo); text-decoration-thickness: 2px; text-underline-offset: 4px;
+  white-space: nowrap;
+}
+.store__go:hover { color: var(--verde-900); }
+.store__links { display: flex; flex-direction: column; align-items: flex-end; gap: 0; }
+.store__web {
+  display: inline-flex; align-items: center; gap: 4px; min-height: 32px;
+  font-size: .8rem; font-weight: 700; color: var(--verde-900); white-space: nowrap; text-decoration: none;
+}
+.store__web::after { content: "↗"; font-size: .9em; color: var(--verde); }
+.store__web:hover { text-decoration: underline; text-decoration-color: var(--amarillo); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.stores__empty { padding: 18px 0; font-size: .92rem; }
+
+/* ---------- mapa ---------- */
+.map { background: var(--bruma); }
+.map__fallback { position: absolute; inset: 0; display: grid; place-items: center; color: var(--verde); padding: 24px; text-align: center; }
+.me-dot {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: #2f7bf5; border: 3px solid var(--blanco);
+  box-shadow: 0 0 0 6px rgba(47, 123, 245, .25), 0 2px 6px rgba(0, 0, 0, .25);
+}
+.maplibregl-ctrl-group { border-radius: 12px !important; box-shadow: 0 6px 18px rgba(0, 60, 25, .16) !important; overflow: hidden; }
+.maplibregl-ctrl-group button { width: 38px !important; height: 38px !important; }
+.maplibregl-ctrl-attrib { font-size: 10px; }
+.maplibregl-cooperative-gesture-screen { font-family: var(--display); background: rgba(0, 90, 38, .55) !important; }
+
+/* tarjeta emergente del pin */
+.maplibregl-popup-content {
+  padding: 14px 16px; border-radius: 16px;
+  font-family: var(--display); color: var(--plomo);
+  box-shadow: 0 14px 34px rgba(0, 60, 25, .22);
+}
+.maplibregl-popup-close-button { font-size: 20px; width: 32px; height: 32px; color: var(--verde); border-radius: 0 16px 0 10px; }
+.pop { display: grid; gap: 3px; min-width: 190px; padding-right: 10px; }
+.pop .store__logo { width: 56px; height: 56px; margin-bottom: 6px; }
+.pop strong { color: var(--verde-900); font-size: 1rem; line-height: 1.2; }
+.pop span { font-size: .85rem; line-height: 1.35; }
+.pop .store__links { flex-direction: row; justify-content: flex-start; gap: 16px; margin-top: 2px; }
+.pop .store__go, .pop .store__web { min-height: 30px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 0s !important; animation-duration: 0s !important; scroll-behavior: auto !important; }
+}

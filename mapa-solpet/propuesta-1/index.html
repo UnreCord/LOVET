@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Solpet | Puntos de venta</title>
+  <meta name="description" content="Encuentra las tiendas y veterinarias de Lima donde están los productos de Solpet.">
+  <meta name="theme-color" content="#007A33">
+  <link rel="icon" type="image/png" href="../assets/favicon.png">
+  <link rel="apple-touch-icon" href="../assets/apple-touch-icon.png">
+  <meta property="og:title" content="Solpet | Puntos de venta">
+  <meta property="og:description" content="Encuentra las tiendas y veterinarias de Lima donde están los productos de Solpet.">
+  <meta property="og:image" content="../assets/icono-512.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../assets/vendor/maplibre/maplibre-gl.css">
+  <link rel="stylesheet" href="../comun/base.css">
+  <link rel="stylesheet" href="estilos.css">
+  <script src="../assets/vendor/maplibre/maplibre-gl.js" defer></script>
+  <script src="../comun/tiendas.js" defer></script>
+  <script src="../comun/mapa.js" defer></script>
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="map" id="map" role="region" aria-label="Mapa de puntos de venta en Lima"></div>
+
+  <!-- en celular el logo flota sobre el mapa -->
+  <div class="brand brand--float">
+    <img src="../assets/solpet-logo.webp" alt="Solpet" width="640" height="208">
+  </div>
+
+  <main class="stores-wrap">
+    <aside class="stores" aria-labelledby="t-donde">
+      <div class="stores__top">
+        <span class="stores__grip" aria-hidden="true"></span>
+        <div class="brand brand--card">
+          <img src="../assets/solpet-logo.webp" alt="Solpet" width="640" height="208">
+        </div>
+        <h1 class="stores__title" id="t-donde">Encuéntranos en</h1>
+        <div class="stores__search">
+          <label class="search">
+            <span class="sr-only">Buscar por distrito, tienda o calle</span>
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m15.5 15.5 5 5"/></svg>
+            <input id="store-q" type="search" placeholder="Distrito, tienda o calle" autocomplete="off" enterkeyhint="search">
+          </label>
+          <button class="btn btn--verde" id="near-me" type="button">
+            <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 3 10.5l7.5 3 3 7.5z"/></svg>
+            <span>Cerca de mí</span>
+          </button>
+        </div>
+        <p class="stores__count" id="store-count" aria-live="polite"></p>
+      </div>
+      <div class="stores__list" id="store-list"></div>
+      <footer class="stores__foot">
+        <img src="../assets/huella-solpet.png" alt="" width="24" height="24">
+        <span>Solpet · Puntos de venta en Lima</span>
+      </footer>
+    </aside>
+  </main>
+</body>
+</html>

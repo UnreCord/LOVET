@@ -1,0 +1,134 @@
+/* Propuesta 1: el diseño original de "Dónde comprar".
+   Laptop: mapa a pantalla completa con la tarjeta de tiendas flotando a la izquierda.
+   Celular: mapa arriba y la lista sube como una hoja sobre él (el buscador queda fijo arriba). */
+
+/* ---------- laptop / escritorio ---------- */
+html, body { height: 100%; }
+body { overflow: hidden; }
+.map { position: fixed; inset: 0; }
+
+.brand img { width: auto; }
+.brand--float { display: none; }
+.brand--card img { height: 34px; margin-bottom: 18px; }
+
+.stores-wrap {
+  position: fixed; inset: 0; z-index: 2;
+  display: flex; padding: 24px;
+  pointer-events: none;
+}
+.stores {
+  pointer-events: auto;
+  display: flex; flex-direction: column;
+  width: min(420px, 100%); max-height: 100%;
+  background: var(--blanco); border-radius: 22px;
+  box-shadow: 0 24px 60px rgba(0, 60, 25, .18);
+  overflow: hidden;
+}
+.stores__top {
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; column-gap: 12px;
+  grid-template-areas: "brand brand" "title near" "search search" "count count";
+  padding: 24px 24px 6px;
+}
+.brand--card { grid-area: brand; }
+.stores__title { grid-area: title; }
+/* el buscador ocupa todo el ancho y "Cerca de mí" sube junto al título */
+.stores__search { display: contents; }
+.stores__search .search { grid-area: search; margin-top: 16px; }
+.stores__search .btn { grid-area: near; min-height: 42px; padding: 0 16px; font-size: .9rem; }
+.stores__count { grid-area: count; }
+.stores__grip { display: none; }
+.stores__title {
+  font-weight: 800; font-variation-settings: "wdth" 80;
+  font-size: clamp(1.6rem, 2.3vw, 2rem); line-height: .95; letter-spacing: -0.03em; color: var(--verde);
+  white-space: nowrap;
+}
+.stores__count { margin: 12px 0 4px; }
+.stores__list {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 24px 8px;
+  scrollbar-width: thin; scrollbar-color: #cfdad1 transparent;
+}
+.stores__group + .stores__group { margin-top: 4px; }
+.stores__foot {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 24px 16px; border-top: 1px solid var(--linea);
+  font-size: .8rem; color: #7a807a;
+}
+.stores__foot img { width: 22px; height: 22px; }
+
+/* laptops bajas */
+@media (min-width: 900px) and (max-height: 640px) {
+  .stores-wrap { padding: 14px; }
+  .brand--card img { height: 26px; margin-bottom: 10px; }
+  .stores__title { font-size: 1.8rem; }
+  .stores__search .search { margin-top: 10px; }
+}
+
+/* ---------- celulares y tablets en vertical ---------- */
+@media (max-width: 899px), (max-width: 1023px) and (orientation: portrait) {
+  :root { --map-h: 46svh; }
+  html, body { height: auto; }
+  body { overflow: visible; background: var(--blanco); }
+
+  .map { position: fixed; inset: 0 0 auto 0; height: calc(var(--map-h) + 28px); }
+
+  .brand--float {
+    display: block;
+    position: fixed; z-index: 1; left: 14px; top: calc(12px + var(--safe-t));
+    padding: 8px 14px; border-radius: 999px;
+    background: rgba(255, 255, 255, .94);
+    box-shadow: 0 6px 18px rgba(0, 60, 25, .16);
+    -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  }
+  .brand--float img { height: 24px; }
+  .brand--card { display: none; }
+
+  .stores-wrap {
+    position: relative; inset: auto; display: block;
+    padding: var(--map-h) 0 0;
+    pointer-events: none;
+  }
+  .stores {
+    width: 100%; max-height: none; min-height: calc(100svh - 64px);
+    border-radius: 24px 24px 0 0; overflow: visible;
+    box-shadow: 0 -10px 30px rgba(0, 60, 25, .14);
+  }
+  /* cabecera de la hoja: queda pegada arriba al hacer scroll */
+  .stores__top {
+    position: sticky; top: 0; z-index: 3;
+    padding: 10px 16px 4px;
+    background: var(--blanco); border-radius: 24px 24px 0 0;
+  }
+  .stores__grip {
+    display: block; width: 40px; height: 5px; margin: 0 auto 10px;
+    border-radius: 999px; background: #d3dbd4;
+  }
+  .stores__title { font-size: 1.75rem; }
+  .stores__top { grid-template-areas: "grip grip" "title near" "search search" "count count"; }
+  .stores__grip { grid-area: grip; }
+  .stores__search .search { margin-top: 12px; }
+  .stores__count { margin: 10px 0 2px; font-size: .84rem; }
+  .stores__list { overflow: visible; padding: 0 16px 8px; }
+  /* los títulos de distrito se pegan debajo de la cabecera */
+  .stores__district { top: var(--head-h, 150px); }
+  .stores__foot { padding: 16px 16px calc(18px + var(--safe-b)); }
+
+  .store { grid-template-columns: 48px minmax(0, 1fr); gap: 4px 12px; padding: 10px; }
+  .store__logo { width: 48px; height: 48px; grid-row: span 2; align-self: start; }
+  .store__links { grid-column: 2; flex-direction: row; justify-content: flex-start; flex-wrap: wrap; gap: 0 18px; }
+  .store__go, .store__web { min-height: 34px; }
+  .store.is-active { box-shadow: inset 3px 0 0 var(--amarillo); }
+}
+
+/* celulares angostos: "Cerca de mí" solo con icono */
+@media (max-width: 339px) {
+  .stores__search .btn { width: 42px; padding: 0; }
+  .stores__search .btn span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* tablets en vertical: la lista en dos columnas */
+@media (min-width: 640px) and (max-width: 1023px) and (orientation: portrait) {
+  .stores__top, .stores__list, .stores__foot { padding-left: 32px; padding-right: 32px; }
+  .stores__items { display: grid; grid-template-columns: 1fr 1fr; column-gap: 28px; }
+  .store { margin: 0 -10px; }
+}

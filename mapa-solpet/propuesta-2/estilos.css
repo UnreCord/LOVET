@@ -1,0 +1,174 @@
+/* Propuesta 2: el mismo diseño, con el mapa a pantalla completa.
+   Las tiendas se recorren deslizando tarjetas abajo (cada tarjeta enciende su pin)
+   y "Ver lista" abre la lista completa por distrito. */
+html, body { height: 100%; }
+body { overflow: hidden; overscroll-behavior: none; }
+.map { position: fixed; inset: 0; }
+
+/* ---------- barra superior ---------- */
+.bar {
+  position: fixed; z-index: 5;
+  top: calc(10px + var(--safe-t)); left: 10px; right: 10px;
+  pointer-events: none;
+}
+.bar__row {
+  pointer-events: auto;
+  display: grid; grid-template-columns: 1fr auto; grid-template-areas: "logo near" "search search";
+  align-items: center; gap: 10px;
+  padding: 10px; border-radius: 22px;
+  background: var(--blanco);
+  box-shadow: 0 10px 30px rgba(0, 60, 25, .16);
+}
+.bar__logo { grid-area: logo; height: 26px; width: auto; margin-left: 6px; }
+.bar .search { grid-area: search; }
+.bar__near { grid-area: near; min-height: 40px; padding: 0 14px; font-size: .88rem; }
+.bar__count {
+  display: inline-block; margin: 8px 0 0 6px; padding: 4px 12px;
+  border-radius: 999px; background: rgba(255, 255, 255, .92);
+  box-shadow: 0 4px 12px rgba(0, 60, 25, .12);
+  font-size: .8rem; font-weight: 600; color: var(--verde-900);
+  pointer-events: auto;
+}
+.bar__count:empty { display: none; }
+
+/* ---------- tarjetas ---------- */
+.deck {
+  position: fixed; z-index: 4; left: 0; right: 0; bottom: 0;
+  padding-bottom: calc(10px + var(--safe-b));
+  pointer-events: none;
+  transition: transform .35s var(--ease), left .35s var(--ease);
+}
+.deck > * { pointer-events: auto; }
+.deck__list-btn {
+  display: flex; margin: 0 auto 10px;
+  min-height: 42px; padding: 0 18px;
+  background: var(--blanco); color: var(--verde);
+  box-shadow: 0 8px 22px rgba(0, 60, 25, .2);
+}
+.deck__list-btn:hover { background: var(--verde-050); }
+.deck__track {
+  display: flex; gap: 10px;
+  overflow-x: auto; overscroll-behavior-x: contain;
+  scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  padding: 4px 16px 6px; scroll-padding: 0 16px;
+  scrollbar-width: none;
+}
+.deck__track::-webkit-scrollbar { display: none; }
+.card {
+  flex: 0 0 min(calc(100vw - 52px), 360px);
+  scroll-snap-align: center;
+  display: grid; grid-template-columns: 60px minmax(0, 1fr); gap: 4px 14px; align-items: start;
+  padding: 14px; border-radius: 20px;
+  background: var(--blanco);
+  box-shadow: 0 10px 26px rgba(0, 60, 25, .18), inset 0 0 0 2px transparent;
+  cursor: pointer;
+  transition: box-shadow .2s;
+}
+.card.is-active { box-shadow: 0 10px 26px rgba(0, 60, 25, .22), inset 0 0 0 2.5px var(--amarillo); }
+.card .store__logo { width: 60px; height: 60px; grid-row: span 2; border-radius: 14px; }
+.card__pick { min-width: 0; padding: 0; border: 0; background: none; text-align: left; cursor: pointer; }
+.card__pick:focus-visible { outline-offset: 4px; border-radius: 6px; }
+.card__district { display: block; font-size: .72rem; font-weight: 700; letter-spacing: .03em; text-transform: uppercase; color: var(--verde); }
+.card .store__name { font-size: 1.05rem; margin-top: 1px; }
+.card__foot { grid-column: 2; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+.card__go { min-height: 38px; padding: 0 16px; font-size: .86rem; }
+.card .store__dist { margin-top: 0; }
+.card__foot .store__web { min-height: 38px; }
+/* ultima tarjeta: las tiendas que no tienen pin */
+.card--more { grid-template-columns: 1fr; align-content: center; background: var(--verde); color: var(--blanco); }
+.card--more strong { font-size: 1.05rem; line-height: 1.2; }
+.card--more span { font-size: .86rem; opacity: .9; }
+.card--more .btn { justify-self: start; margin-top: 8px; min-height: 38px; background: var(--amarillo); color: var(--verde-900); font-size: .86rem; }
+
+.deck__nav { display: none; }
+
+/* ---------- lista completa ---------- */
+.sheet {
+  position: fixed; z-index: 6; left: 0; right: 0; bottom: 0;
+  top: calc(var(--bar-h, 120px) + 18px);
+  display: flex; flex-direction: column;
+  background: var(--blanco); border-radius: 24px 24px 0 0;
+  box-shadow: 0 -12px 40px rgba(0, 60, 25, .2);
+  transform: translateY(105%); visibility: hidden;
+  transition: transform .4s var(--ease), visibility 0s .4s;
+}
+body.list-open .sheet { transform: none; visibility: visible; transition: transform .4s var(--ease), visibility 0s; }
+body.list-open .deck { transform: translateY(110%); }
+.sheet__head {
+  display: grid; grid-template-columns: 1fr auto; align-items: center;
+  padding: 10px 16px 4px;
+}
+.sheet__grip { grid-column: 1 / -1; justify-self: center; width: 40px; height: 5px; margin-bottom: 8px; border-radius: 999px; background: #d3dbd4; }
+.sheet__title {
+  font-weight: 800; font-variation-settings: "wdth" 80;
+  font-size: 1.75rem; line-height: 1; letter-spacing: -0.03em; color: var(--verde);
+}
+.sheet__close {
+  width: 42px; height: 42px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; background: var(--bruma); color: var(--verde); cursor: pointer;
+}
+.sheet__close svg { width: 20px; height: 20px; }
+.sheet .store__links { gap: 0; }
+.sheet__list {
+  flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 16px calc(16px + var(--safe-b));
+  -webkit-overflow-scrolling: touch;
+}
+
+/* celulares muy angostos: "Cerca de mí" solo con icono */
+@media (max-width: 359px) {
+  .bar__near { width: 40px; padding: 0; }
+  .bar__near span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* celulares en horizontal: barra en una sola fila y tarjetas más bajas */
+@media (max-height: 520px) and (orientation: landscape) {
+  .bar__row { grid-template-columns: auto 1fr auto; grid-template-areas: "logo search near"; padding: 6px 8px; }
+  .bar { right: auto; width: min(620px, calc(100vw - 20px)); }
+  .bar__count { display: none; }
+  .deck__list-btn { position: absolute; right: 12px; bottom: calc(100% - 2px); margin: 0; }
+  .card { flex-basis: 330px; padding: 10px; }
+  .card .store__logo { width: 48px; height: 48px; }
+  .card__foot { margin-top: 2px; }
+  .sheet { top: 10px; left: auto; width: min(440px, 100vw); border-radius: 24px 0 0 0; }
+}
+
+/* ---------- laptop / escritorio ---------- */
+@media (min-width: 900px) {
+  .bar { top: 24px; left: 24px; right: auto; width: min(640px, calc(100vw - 48px)); }
+  .bar__row { grid-template-columns: auto 1fr auto; grid-template-areas: "logo search near"; gap: 14px; padding: 10px 10px 10px 16px; border-radius: 999px; }
+  .bar__logo { height: 30px; margin: 0 4px 0 0; }
+  .bar__near { min-height: 46px; padding: 0 18px; font-size: .95rem; }
+  .bar__count { margin-left: 16px; }
+
+  .deck { padding: 0 24px 24px; }
+  .deck__list-btn { margin: 0 0 12px; }
+  .deck__track { padding: 4px 60px 8px; scroll-padding: 0 60px; gap: 14px; }
+  .card { flex-basis: 340px; scroll-snap-align: start; }
+  .deck__nav {
+    display: grid; place-items: center;
+    position: absolute; bottom: calc(24px + 62px); z-index: 1;
+    width: 44px; height: 44px; border: 0; border-radius: 50%;
+    background: var(--verde); color: var(--blanco); cursor: pointer;
+    box-shadow: 0 8px 20px rgba(0, 60, 25, .25);
+    transition: opacity .2s, background-color .2s;
+  }
+  .deck__nav:hover { background: var(--verde-900); }
+  .deck__nav:disabled { opacity: 0; pointer-events: none; }
+  .deck__nav svg { width: 22px; height: 22px; }
+  .deck__nav--prev { left: 32px; }
+  .deck__nav--next { right: 32px; }
+
+  .sheet {
+    top: calc(var(--bar-h, 90px) + 36px); left: 24px; right: auto; bottom: 24px;
+    width: 420px; border-radius: 22px;
+    box-shadow: 0 24px 60px rgba(0, 60, 25, .2);
+    transform: translateX(calc(-100% - 40px));
+  }
+  .sheet__grip { display: none; }
+  .sheet__head { padding: 20px 24px 6px; }
+  .sheet__title { font-size: 2rem; }
+  .sheet .store__links { gap: 0; }
+.sheet__list { padding: 0 24px 16px; }
+  body.list-open .deck { transform: none; left: 468px; }
+}

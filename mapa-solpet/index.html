@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Solpet | Mapa de puntos de venta</title>
+  <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#007A33">
+  <link rel="icon" type="image/png" href="assets/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="comun/base.css">
+  <style>
+    body { min-height: 100svh; display: grid; place-items: center; padding: 24px 16px calc(24px + var(--safe-b)); background: var(--verde); }
+    .pick { width: min(720px, 100%); background: var(--blanco); border-radius: 24px; padding: clamp(22px, 5vw, 40px); box-shadow: 0 24px 60px rgba(0, 0, 0, .18); }
+    .pick > img { height: 40px; width: auto; }
+    h1 { margin-top: 22px; font-weight: 800; font-variation-settings: "wdth" 80; font-size: clamp(1.9rem, 6vw, 2.6rem); line-height: 1; letter-spacing: -.03em; color: var(--verde); }
+    .pick > p { margin-top: 10px; }
+    .opts { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 24px; }
+    .opt { display: grid; gap: 6px; padding: 18px; border-radius: 18px; background: var(--bruma); text-decoration: none; border: 2px solid transparent; transition: border-color .2s; }
+    .opt:hover { border-color: var(--amarillo); }
+    .opt b { color: var(--verde-900); font-size: 1.15rem; }
+    .opt span { font-size: .9rem; }
+    .opt em { font-style: normal; font-weight: 700; color: var(--verde); text-decoration: underline; text-decoration-color: var(--amarillo); text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  </style>
+</head>
+<body>
+  <main class="pick">
+    <img src="assets/solpet-logo.webp" alt="Solpet" width="640" height="208">
+    <h1>Mapa de puntos de venta</h1>
+    <p>Dos propuestas con el mismo diseño. Ábrelas en el celular para ver cómo se comportan.</p>
+    <div class="opts">
+      <a class="opt" href="propuesta-1/">
+        <b>Propuesta 1 · Mapa + lista</b>
+        <span>El diseño original: en celular el mapa arriba y la lista de tiendas sube como una hoja; en laptop, la tarjeta flota sobre el mapa.</span>
+        <em>Abrir propuesta 1</em>
+      </a>
+      <a class="opt" href="propuesta-2/">
+        <b>Propuesta 2 · Mapa completo</b>
+        <span>El mapa ocupa toda la pantalla y las tiendas se recorren deslizando tarjetas; "Ver lista" muestra todas por distrito.</span>
+        <em>Abrir propuesta 2</em>
+      </a>
+    </div>
+  </main>
+</body>
+</html>
